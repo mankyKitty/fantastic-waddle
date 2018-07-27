@@ -1,0 +1,60 @@
+name: frontend
+version: 0.1
+cabal-version: >= 1.8
+build-type: Simple
+
+library
+  hs-source-dirs: src
+  build-depends: base
+               , reflex >= 0.5 && <0.6
+               , reflex-dom >= 0.4 && <0.5
+               , text
+
+               , reflex-dom-svg
+               , reflex-dom-canvas
+
+               , time
+               , random
+               , MonadRandom
+               , mtl >= 2.2
+               , lens
+               , hsnoise
+               , linear
+               , colour
+               , clay
+               , containers
+               , dependent-map
+               , dependent-sum-template
+               , vector
+               , ghcjs-dom 
+
+  exposed-modules: Frontend
+                 , Squares
+                 , Canvas2D.JoyDivision
+                 , Canvas2D.TiledLines
+                 , Canvas2D.Internal
+                 , Styling.Bootstrap
+
+  ghc-options: -Wall
+
+executable frontend
+  main-is: Main.hs
+  hs-source-dirs: exe
+
+  build-depends: base
+               , reflex-dom >= 0.4 && <0.5
+               , frontend
+               , random
+               , static
+               , common
+
+  -- TODO: Make these ghc-options optional
+  if impl(ghcjs -any)
+    ghc-options:         -Wall -O2 -dedupe
+    cpp-options:         -DGHCJS_BROWSER
+
+  if !impl(ghcjs -any)
+    ghc-options:         -Wall
+
+  if os(darwin)
+     ghc-options: -dynamic
