@@ -4,7 +4,7 @@
 {-# LANGUAGE RecursiveDo       #-}
 module Canvas2D.JoyDivision where
 
-import           Prelude                            (Double, Float, Num, abs, show, floor, fst,
+import           Prelude                            (Double, Float, Num, Int, abs, show, floor,
                                                      div, max, realToFrac, snd, fromIntegral,
                                                      (*), (+), (-), (/))
 
@@ -15,15 +15,14 @@ import           Control.Lens                       (at, itraverse_, ix, mapped,
                                                      (^?))
 import           Control.Monad                      ((>>=))
 
-import           Control.Monad.State                (evalState, gets, put,liftIO)
+import           Control.Monad.State                (evalState, gets, put)
 
 import           Data.Foldable                      (forM_, traverse_)
 import           Data.Traversable                   (traverse)
 
 import           Data.Function                      (($), (&))
 import           Data.Functor                       (fmap, ($>), (<$), (<$>))
-import Data.Functor.Identity (Identity (..), runIdentity)
-import           Data.Maybe                         (Maybe (..), fromMaybe)
+import           Data.Maybe                         (fromMaybe)
 import           Data.Semigroup                     ((<>))
 
 import           Data.Text                          (Text)
@@ -53,8 +52,7 @@ import qualified GHCJS.DOM.CanvasPath               as DOM_CP
 import           GHCJS.DOM.CanvasRenderingContext2D (CanvasRenderingContext2D)
 import qualified GHCJS.DOM.CanvasRenderingContext2D as DOM_CR
 
-import           GHCJS.DOM.Types                    (JSM, JSString, MonadJSM,
-                                                     liftJSM)
+import           GHCJS.DOM.Types                    (JSM, MonadJSM, liftJSM)
 import qualified Styling.Bootstrap                  as B
 import qualified Canvas2D.Internal as CI
 
@@ -63,13 +61,13 @@ newtype Lines = Lines
   }
 
 paintingSize :: Num n => n
-paintingSize = 800
+paintingSize = 600
 
 paintingMargin :: Num n => n
 paintingMargin = 20
 
-step :: Num n => n
-step = fromIntegral . floor $ paintingSize / paintingMargin
+step :: Int
+step = floor ((paintingSize / paintingMargin) :: Double)
 
 canvasSize :: Num n => n
 canvasSize = paintingSize + paintingMargin
@@ -80,16 +78,16 @@ canvasAttrs =
   "height" =: s <>
   "width"  =: s
   where
-    s = Text.pack . show $ canvasSize
+    s = Text.pack . show $ (canvasSize :: Int)
 
 initialLines :: Lines
 initialLines =
   let
-    n = paintingSize `div` step - 2
+    n = paintingSize `div` step
   in
     Lines
-    . V.iterateN n (fmap (L._y +~ step))
-    $ V.iterateN n (L._x +~ step) (L.V2 paintingMargin paintingMargin)
+    . V.iterateN n (fmap (L._y +~ fromIntegral step))
+    $ V.iterateN n (L._x +~ fromIntegral step) (L.V2 paintingMargin paintingMargin)
 
 applyWibbleWithVariance
   :: Lines
@@ -161,17 +159,12 @@ drawLines
 drawLines (Lines xxs) lineFn cx = liftJSM $ do
   -- Clear the rectangle so we don't leave drag marks everywhere, for now. ;)
   DOM_CR.clearRect cx 0 0 canvasSize canvasSize
-
-  -- Set up some colouring and line thickness
-  DOM_CR.setFillStyle cx ("#f9f9f9" :: JSString)
   DOM_CR.setLineWidth cx 2
-
   -- Start the path
   DOM_CR.beginPath cx
 
   forM_ xxs $ \xs -> do
     lineFn cx xs
-    DOM_CR.fill cx Nothing
     DOM_CR.stroke cx
 
 rangeConf :: R.Reflex t => Float -> Text -> RD.RangeInputConfig t
@@ -198,7 +191,7 @@ joyDivision sGen = do
   ePost <- RD.getPostBuild
 
   (eWib, eStraight, eCurves) <- RD.elAttr "form" ("class" =: "form-inline") $ liftA3 (,,)
-    (B.bsButton_ "Wibble" B.Secondary)
+    (B.bsButton_ "Re-Wibble" B.Secondary)
     (B.bsButton_ "Straight Lines" B.Secondary)
     (B.bsButton_ "Quadratic Curves" B.Secondary)
 
@@ -218,7 +211,7 @@ joyDivision sGen = do
     -- Variance bound range adjustment
     (RD.divClass "slider" $ dRange "Variance" "variance" 50 $ \m -> m
       & at "min" ?~ "0"
-      & at "max" ?~ (Text.pack . show $ paintingSize / 4)
+      & at "max" ?~ Text.pack (show (paintingSize / 4 ::Double))
       & at "step" ?~ "1"
     )
 
@@ -242,8 +235,8 @@ joyDivision sGen = do
       <*> (dRVariance ^. RD.rangeInput_value)
       <*> dGen
 
-  _ <- C.nextFrameAsyncWithCx dCx (drawLines <$> dWibble <*> dCurveFn)
-
+  _ <- C.nextFrameAsyncWithCx dCx
+    (drawLines <$> dWibble <*> dCurveFn)
     ( eBoop
       <> (() <$ dRLower ^. RD.rangeInput_input)
       <> (() <$ dRUpper ^. RD.rangeInput_input)

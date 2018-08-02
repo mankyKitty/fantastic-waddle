@@ -6,19 +6,8 @@
 {-# LANGUAGE TemplateHaskell           #-}
 {-# LANGUAGE TypeFamilies              #-}
 {-# LANGUAGE ViewPatterns              #-}
-module Squares
-  ( World (..)
-  , HasWorld (..)
-  , Count (..)
-  , Size (..)
-  , Padding (..)
-  , Poly (..)
-  , PolyAttrs (..)
-  , StrokeFill (..)
-  , Colour (..)
-  , createPath
-  , createPolygons
-  , squares
+module SVG.Squares
+  ( squares
   ) where
 
 import           Control.Applicative                  (liftA2)
@@ -62,6 +51,7 @@ import           Reflex.Dom.Widget.SVG.Types          (Height, Pos,
 import qualified Reflex.Dom.Widget.SVG.Types          as SVGT
 import qualified Reflex.Dom.Widget.SVG.Types.SVG_Path as P
 
+import Internal ((<$$))
 import qualified Styling.Bootstrap as B
 
 data World = World
@@ -287,7 +277,7 @@ svgEl = SVGT.SVG_El wwidth wheight Nothing
 
 squares :: StdGen -> Widget x ()
 squares sGen = do
-  eTickInfo <- (() <$) <$> tickLossyFromPostBuildTime 0.016
+  eTickInfo <- () <$$ tickLossyFromPostBuildTime 0.016
 
   eGenerate <- B.bsButton_ "New Squares" B.Secondary
   eOnButton <- B.bsButton_ "Manual" B.Secondary

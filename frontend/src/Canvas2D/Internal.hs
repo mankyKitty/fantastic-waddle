@@ -10,15 +10,13 @@ import Control.Monad.State (runStateT,gets,put,lift)
 import Data.Map (Map)
 import Data.Text (Text)
 
-import Data.Functor (($>))
-
 import System.Random (StdGen,Random)
 import qualified System.Random as Rnd
 
 import Reflex.Dom.Core (MonadWidget,Dynamic)
 import qualified Reflex.Dom.Core as RD
 
-import           GHCJS.DOM.CanvasRenderingContext2D (CanvasRenderingContext2D)
+import GHCJS.DOM.CanvasRenderingContext2D (CanvasRenderingContext2D)
 
 import qualified Reflex.Dom.CanvasBuilder.Types     as CTypes
 import qualified Reflex.Dom.CanvasDyn               as C

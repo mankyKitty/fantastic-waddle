@@ -9,6 +9,7 @@ let
     mkdir -p $out
     mkdir -p $out/css
 
+    ln -s ${ob}/static/css/reflexive-art.css $out/css/reflexive-art.css
     ln -s ${bootstrap4.out}/css/bootstrap.min.css $out/css/bootstrap.min.css
     ln -s ${bootstrap4.out}/css/bootstrap.min.css.map $out/css/bootstrap.min.css.map
 

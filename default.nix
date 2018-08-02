@@ -2,7 +2,7 @@
 , iosSdkVersion ? "10.2"
 }:
 with import ./.obelisk/impl { inherit system iosSdkVersion; };
-project ./. ({ ... }: {
+project ./. ({ pkgs, ... }: {
 
   overrides = (self: super: let
     # rfx-canvas = import ./nix/reflex-dom-canvas.nix;

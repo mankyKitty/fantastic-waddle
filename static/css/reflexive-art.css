@@ -1,0 +1,16 @@
+.svg-wrapper, .canvas-wrapper > canvas {
+  background-color: #fffff0;
+}
+
+.gol-canvas {
+  background: black;
+}
+
+.svg-wrapper {
+  transform-origin: top left;
+  transform: scale(10);
+}
+
+.basic-poly {
+  stroke-width: 0.2px;
+}

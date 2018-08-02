@@ -1,5 +1,7 @@
+{-# LANGUAGE DataKinds             #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings     #-}
+{-# LANGUAGE TypeApplications      #-}
 {-# LANGUAGE TypeFamilies          #-}
 module Frontend
   ( frontend
@@ -7,49 +9,53 @@ module Frontend
   , body
   ) where
 
-import           Control.Applicative  (liftA2)
-
 import           System.Random        (StdGen)
 
 import           Data.Semigroup       ((<>))
-import           Data.Text            (Text)
+import Data.Text (Text)
 
 import           Reflex.Dom.Core
 
+import           WebGL.GOL            (gol)
+
 import           Canvas2D.JoyDivision (joyDivision)
-import Canvas2D.TiledLines (tiledLines)
-import           Squares              (squares)
+import           Canvas2D.TiledLines  (tiledLines)
+
+import           SVG.Squares              (squares)
 
 import qualified Styling.Bootstrap    as B
+
+import           Static
+
+widg
+  :: MonadWidget t m
+  => m ()
+  -> Text
+  -> m (Event t (m ()))
+widg w txt = 
+  (w <$) <$> B.bsButton_ txt B.Primary
 
 body :: StdGen -> Widget x ()
 body sGen = do
   divClass "container" $
     divClass "row" $ do
-    (eSq, eTl) <- divClass "col-2" $ liftA2 (,)
-      (B.bsButton_ "Squares" B.Primary)
-      (B.bsButton_ "Tiled Lines" B.Primary)
-      -- (B.bsButton_ "Joy Division" B.Primary)
+    eWidgs <- divClass "col-2" $ sequenceA 
+      [ widg (squares sGen) "Squares" 
+      , widg tiledLines "Tiled Lines" 
+      , widg (joyDivision sGen) "Joy Division" 
+      , widg (gol sGen) "Game Of Life"
+      ]
 
-    let
-      -- jd = joyDivision sGen
-      sq = squares sGen
-      tl = tiledLines
-
-    _ <- divClass "col-10" 
-      . divClass "container" 
-        . divClass "row" $ 
-          widgetHold sq $ leftmost 
-            [ sq <$ eSq
-            , tl <$ eTl
-            -- , jd <$ eJd
-            ]
+    _ <- 
+      divClass "col-10"
+      . divClass "container"
+        . divClass "row" $ widgetHold (squares sGen) (leftmost eWidgs)
     blank
   blank
 
 headStatic :: StaticWidget x ()
 headStatic = do
-  cssLink "css/reflexive-art.css"
+  cssLink (static @"css/reflexive-art.css")
   cssLink "css/bootstrap.min.css"
   el "title" $ text "Oh my"
   where
@@ -58,5 +64,5 @@ headStatic = do
 frontend :: StdGen -> (StaticWidget x (), Widget x ())
 frontend sGen =
   ( headStatic
-  , body sGen 
+  , body sGen
   )

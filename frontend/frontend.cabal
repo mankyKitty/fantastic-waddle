@@ -9,6 +9,7 @@ library
                , reflex >= 0.5 && <0.6
                , reflex-dom >= 0.4 && <0.5
                , text
+               , static
 
                , reflex-dom-svg
                , reflex-dom-canvas
@@ -27,13 +28,25 @@ library
                , dependent-sum-template
                , vector
                , ghcjs-dom 
+               , jsaddle
 
   exposed-modules: Frontend
-                 , Squares
+
+                 , Internal
+
+                 , SVG.Squares
+
                  , Canvas2D.JoyDivision
                  , Canvas2D.TiledLines
                  , Canvas2D.Internal
+
+                 , WebGL.GOL
+                 , WebGL.Types
+                 , WebGL.Internal
+                 , WebGL.Shaders.GOL
+
                  , Styling.Bootstrap
+
 
   ghc-options: -Wall
 
