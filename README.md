@@ -8,7 +8,7 @@ This is all built using [nix] and the [obelisk] builder from [obsidian systems].
 
 If you want to build this package you will need to use [`nix`](https://nixos.org/), as the dependency requirements for GHCJS and some of the dependencies can get a bit wild.
 
-To compile to JS and use the provided `index.html`:
+To compile to JS and use the provided `index.html` (**Recommended**).
 
 ```bash
 $ git clone https://github.com/mankyKitty/fantastic-waddle

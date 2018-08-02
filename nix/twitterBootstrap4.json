@@ -1,7 +1,7 @@
 {
-  "url": "git@github.com:twbs/bootstrap",
-  "rev": "bbee41431d51f6d7d7160d9dc4d112b54d13904b",
-  "date": "2018-07-24T17:56:03-07:00",
-  "sha256": "18s38g1jd6dgncbhyjssfmlr6gvzydkfk8s2idz01zxpr8yn8dgj",
+  "url": "https://github.com/twbs/bootstrap",
+  "rev": "0b5a8d9c981ae70153cdd64b250a3d9e53014422",
+  "date": "2018-07-29T14:18:09-07:00",
+  "sha256": "1910b2lb4gx564flvb0vwxzzhf4qdfnsbpavavyxg96l07yln3a9",
   "fetchSubmodules": true
 }
