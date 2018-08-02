@@ -26,7 +26,7 @@ import           Reflex                              as R
 import           Reflex.Dom.Core                     (Widget, (=:))
 import qualified Reflex.Dom.Core                     as RD
 
-import           GHCJS.DOM.Types                     (Float32Array, GLsizei, MonadJSM, WebGLProgram, WebGLRenderingContext, WebGLTexture)
+import           GHCJS.DOM.Types                     (JSM,Float32Array, GLsizei, MonadJSM, WebGLProgram, WebGLRenderingContext, WebGLTexture)
 
 import qualified GHCJS.DOM.Types                     as GHCJS
 
@@ -159,6 +159,21 @@ setInitialState sGen cx g = do
   
   pure g
 
+runGL
+  :: ( RD.DomRenderHook t m
+     , RD.MonadWidget t m
+     )
+  => Dynamic t WebGLRenderingContext
+  -> Dynamic t (Maybe GOL)
+  -> (WebGLRenderingContext -> GOL -> JSM GOL)
+  -> Event t a
+  -> m (Event t (Maybe GOL))
+runGL dCx dMGol glF eGo = RD.requestDomAction $ 
+  (\c g -> traverse (glF c >=> draw c) g)
+  <$> R.current dCx 
+  <*> R.current dMGol 
+  <@ eGo
+
 gol :: StdGen -> Widget x ()
 gol sGen = RD.divClass "gol" $ do
   ePost <- RD.getPostBuild
@@ -179,8 +194,8 @@ gol sGen = RD.divClass "gol" $ do
 
   dCx <- fmap _canvasInfo_context <$> C.dContextWebgl (CanvasConfig canvas [])
 
-  (eError, eGol) <- fmap R.fanEither <$> RD.requestDomAction
-    $ createGOL <$> R.current dCx <@ ePost
+  (eError, eGol) <- fmap R.fanEither <$> RD.requestDomAction $ 
+    createGOL <$> R.current dCx <@ ePost
 
   dStatus <- R.holdDyn "Nothing Yet" $ R.leftmost
     [ ("Bugger: " <>) . tshow <$> eError
@@ -191,29 +206,19 @@ gol sGen = RD.divClass "gol" $ do
     (\c -> setInitialState sGen c >=> draw c) <$> R.current dCx <@> eGol
 
   -- Spicy!!
-  rec (eStepRendered, eWasReset, dMGol) <- do 
-      dMGol <- R.holdDyn Nothing $ R.leftmost
+  rec dMGol <- R.holdDyn Nothing $ R.leftmost
         [ Just <$> eGol
         , eStepRendered
         , eWasReset
         ] 
 
-      let runGL glF eGo = RD.requestDomAction $ 
-            (\c g -> traverse (glF c >=> draw c) g)
-            <$> R.current dCx 
-            <*> R.current dMGol 
-            <@ eGo
+      eStepRendered <- runGL dCx dMGol step (R.switchDyn dTick)
+      eWasReset <- runGL dCx dMGol (setInitialState sGen) eReset
 
-      eS <- runGL step (R.switchDyn dTick)
-      eR <- runGL (setInitialState sGen) eReset
-
-      pure (eS, eR, dMGol)
-
-  dRendered <- R.holdDyn "Nothing Yet" $ R.leftmost
-    [ "Rendered!" <$ eDrawn
-    , "Stepped!"  <$ eStepRendered
-    , "Reset!"    <$ eWasReset
-    ]
+  dRendered <- R.holdDyn "Nothing Yet" $
+    ("Rendered!" <$ eDrawn) <>
+    ("Stepped!"  <$ eStepRendered) <>
+    ("Reset!"    <$ eWasReset)
 
   RD.divClass "status" (RD.dynText dStatus)
   RD.divClass "rendered" (RD.dynText dRendered)
