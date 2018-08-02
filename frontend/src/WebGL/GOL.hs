@@ -26,13 +26,17 @@ import           Reflex                              as R
 import           Reflex.Dom.Core                     (Widget, (=:))
 import qualified Reflex.Dom.Core                     as RD
 
-import           GHCJS.DOM.Types                     (JSM,Float32Array, GLsizei, MonadJSM, WebGLProgram, WebGLRenderingContext, WebGLTexture)
+import           GHCJS.DOM.Types                     (JSM,Float32Array, GLsizei,
+                                                      MonadJSM, WebGLProgram,
+                                                      WebGLRenderingContext,
+                                                      WebGLTexture)
 
 import qualified GHCJS.DOM.Types                     as GHCJS
 
 import qualified GHCJS.DOM.WebGLRenderingContextBase as GLB
 
-import           Reflex.Dom.CanvasBuilder.Types      (CanvasConfig (..), CanvasInfo (_canvasInfo_context))
+import           Reflex.Dom.CanvasBuilder.Types      (CanvasConfig (..),
+                                                      CanvasInfo (_canvasInfo_context))
 import qualified Reflex.Dom.CanvasDyn                as C
 
 import qualified Styling.Bootstrap                   as B
@@ -141,9 +145,9 @@ setInitialState sGen cx g = do
     size = scaledWidth * scaledHeight
     on = [255,255,255,255]
     off = [0,0,0,225]
-    bools = [ bool on off b | b <- Rnd.randoms sGen ]
 
-  u8arr <- GLI.toUint8Array (fold $ take size bools)
+  u8arr <- GLI.toUint8Array $ 
+    foldMap (bool on off) (take size (Rnd.randoms sGen))
 
   GLB.bindTexture cx GLB.TEXTURE_2D (g ^? golFront)
 
@@ -156,7 +160,7 @@ setInitialState sGen cx g = do
     GLB.RGBA
     GLB.UNSIGNED_BYTE
     u8arr
-  
+
   pure g
 
 runGL
@@ -168,10 +172,10 @@ runGL
   -> (WebGLRenderingContext -> GOL -> JSM GOL)
   -> Event t a
   -> m (Event t (Maybe GOL))
-runGL dCx dMGol glF eGo = RD.requestDomAction $ 
+runGL dCx dMGol glF eGo = RD.requestDomAction $
   (\c g -> traverse (glF c >=> draw c) g)
-  <$> R.current dCx 
-  <*> R.current dMGol 
+  <$> R.current dCx
+  <*> R.current dMGol
   <@ eGo
 
 gol :: StdGen -> Widget x ()
@@ -192,9 +196,10 @@ gol sGen = RD.divClass "gol" $ do
     )
     RD.blank
 
-  dCx <- fmap _canvasInfo_context <$> C.dContextWebgl (CanvasConfig canvas [])
+  dCx <- fmap _canvasInfo_context <$>
+    C.dContextWebgl (CanvasConfig canvas [])
 
-  (eError, eGol) <- fmap R.fanEither <$> RD.requestDomAction $ 
+  (eError, eGol) <- fmap R.fanEither <$> RD.requestDomAction $
     createGOL <$> R.current dCx <@ ePost
 
   dStatus <- R.holdDyn "Nothing Yet" $ R.leftmost
@@ -202,7 +207,7 @@ gol sGen = RD.divClass "gol" $ do
     , "Woot!" <$ eGol
     ]
 
-  eDrawn <- RD.requestDomAction $ 
+  eDrawn <- RD.requestDomAction $
     (\c -> setInitialState sGen c >=> draw c) <$> R.current dCx <@> eGol
 
   -- Spicy!!
@@ -210,7 +215,7 @@ gol sGen = RD.divClass "gol" $ do
         [ Just <$> eGol
         , eStepRendered
         , eWasReset
-        ] 
+        ]
 
       eStepRendered <- runGL dCx dMGol step (R.switchDyn dTick)
       eWasReset <- runGL dCx dMGol (setInitialState sGen) eReset
