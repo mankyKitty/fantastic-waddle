@@ -1,7 +1,7 @@
-{-# LANGUAGE NoMonomorphismRestriction  #-}
-{-# LANGUAGE OverloadedStrings          #-}
-{-# LANGUAGE RankNTypes                 #-}
-{-# LANGUAGE RecursiveDo #-}
+{-# LANGUAGE NoMonomorphismRestriction #-}
+{-# LANGUAGE OverloadedStrings         #-}
+{-# LANGUAGE RankNTypes                #-}
+{-# LANGUAGE RecursiveDo               #-}
 module WebGL.GOL
   ( gol
   ) where
@@ -16,7 +16,7 @@ import           Data.Foldable                       (fold)
 import           Data.Function                       ((&))
 import           Data.Semigroup                      ((<>))
 
-import Data.Text (Text)
+import           Data.Text                           (Text)
 import qualified Data.Text                           as Text
 
 import           System.Random                       (StdGen)
@@ -26,8 +26,9 @@ import           Reflex                              as R
 import           Reflex.Dom.Core                     (Widget, (=:))
 import qualified Reflex.Dom.Core                     as RD
 
-import           GHCJS.DOM.Types                     (JSM,Float32Array, GLsizei,
-                                                      MonadJSM, WebGLProgram,
+import           GHCJS.DOM.Types                     (Float32Array, GLsizei,
+                                                      JSM, MonadJSM,
+                                                      WebGLProgram,
                                                       WebGLRenderingContext,
                                                       WebGLTexture)
 
@@ -35,19 +36,19 @@ import qualified GHCJS.DOM.Types                     as GHCJS
 
 import qualified GHCJS.DOM.WebGLRenderingContextBase as GLB
 
-import           Reflex.Dom.CanvasBuilder.Types      (CanvasConfig (..),
-                                                      CanvasInfo (_canvasInfo_context))
+import           Reflex.Dom.CanvasBuilder.Types      (CanvasConfig (..), CanvasInfo (_canvasInfo_context))
 import qualified Reflex.Dom.CanvasDyn                as C
 
 import qualified Styling.Bootstrap                   as B
 
-import Internal ((<$$))
+import           Internal                            ((<$$))
 
-import WebGL.Types (GOL (..), Error, HasGOL (..))
-import qualified WebGL.Types as GLT
+import           WebGL.Types                         (Error, GOL (..),
+                                                      HasGOL (..))
+import qualified WebGL.Types                         as GLT
 
-import qualified WebGL.Internal as GLI
-import qualified WebGL.Shaders.GOL                  as Shaders
+import qualified WebGL.Internal                      as GLI
+import qualified WebGL.Shaders.GOL                   as Shaders
 
 tshow :: Show a => a -> Text
 tshow = Text.pack . show
@@ -146,7 +147,7 @@ setInitialState sGen cx g = do
     on = [255,255,255,255]
     off = [0,0,0,225]
 
-  u8arr <- GLI.toUint8Array $ 
+  u8arr <- GLI.toUint8Array $
     foldMap (bool on off) (take size (Rnd.randoms sGen))
 
   GLB.bindTexture cx GLB.TEXTURE_2D (g ^? golFront)

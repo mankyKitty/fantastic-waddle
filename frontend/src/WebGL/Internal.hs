@@ -1,23 +1,22 @@
-{-# LANGUAGE CPP #-}
-{-# LANGUAGE RankNTypes                 #-}
+{-# LANGUAGE CPP               #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RankNTypes        #-}
 module WebGL.Internal where
 
-import Control.Monad (void, unless)
-import Control.Lens (Lens', (^?), (^.))
+import           Control.Lens                        (Lens', (^.), (^?))
+import           Control.Monad                       (unless, void)
 import           Control.Monad.Except                (throwError)
 
+import           Data.Bool                           (bool)
+import           Data.Maybe                          (fromMaybe)
+import           Data.Text                           (Text)
 import           GHC.Word                            (Word8)
-import Data.Bool (bool)
-import Data.Maybe (fromMaybe)
-import Data.Text (Text)
 
-import           GHCJS.DOM.Types                     (ArrayBuffer, JSString,
-                                                      Float32Array, GLenum,
-                                                      GLfloat, GLint, GLsizei,
-                                                      JSVal, MonadJSM,
-                                                      Uint8Array, WebGLBuffer,
-                                                      WebGLProgram,
+import           GHCJS.DOM.Types                     (ArrayBuffer, Float32Array,
+                                                      GLenum, GLfloat, GLint,
+                                                      GLsizei, JSString, JSVal,
+                                                      MonadJSM, Uint8Array,
+                                                      WebGLBuffer, WebGLProgram,
                                                       WebGLRenderingContext,
                                                       WebGLShader, WebGLTexture)
 
@@ -27,7 +26,7 @@ import qualified GHCJS.DOM.Types                     as GHCJS
 
 import qualified GHCJS.DOM.WebGLRenderingContextBase as GLB
 
-import WebGL.Types (GOL, WebGLM, Error (..))
+import           WebGL.Types                         (Error (..), GOL, WebGLM)
 
 initShader
   :: GHCJS.GLenum

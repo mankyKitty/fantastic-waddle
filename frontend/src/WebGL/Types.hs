@@ -1,24 +1,18 @@
-{-# LANGUAGE CPP #-}
-{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE CPP                        #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE TemplateHaskell            #-}
 {-# OPTIONS_HADDOCK prune #-}
 module WebGL.Types where
 
-import Control.Lens (makeClassy)
-import Control.Monad.Except (ExceptT, MonadError)
-import Control.Monad.IO.Class (MonadIO)
+import           Control.Lens           (makeClassy)
+import           Control.Monad.Except   (ExceptT, MonadError)
+import           Control.Monad.IO.Class (MonadIO)
 
-import Data.Text (Text)
+import           Data.Text              (Text)
 
-import GHCJS.DOM.Types  ( GLenum 
-                        , JSM
-                        , Float32Array
-                        , MonadJSM
-                        , WebGLBuffer
-                        , WebGLFramebuffer
-                        , WebGLProgram
-                        , WebGLTexture
-                        )
+import           GHCJS.DOM.Types        (Float32Array, GLenum, JSM, MonadJSM,
+                                         WebGLBuffer, WebGLFramebuffer,
+                                         WebGLProgram, WebGLTexture)
 
 data GOL = GOL
   { _golFrameBuffer :: WebGLFramebuffer
