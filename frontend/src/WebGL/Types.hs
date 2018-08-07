@@ -1,11 +1,15 @@
 {-# LANGUAGE CPP                        #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleInstances          #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE MultiParamTypeClasses      #-}
 {-# LANGUAGE TemplateHaskell            #-}
+{-# LANGUAGE TypeFamilies               #-}
 {-# OPTIONS_HADDOCK prune #-}
 module WebGL.Types where
 
-import           Control.Lens           (makeClassy)
-import           Control.Monad.Except   (ExceptT, MonadError)
+import           Control.Lens           (makeClassy, makeWrapped)
+import           Control.Monad.Except   (ExceptT, MonadError, throwError)
 import           Control.Monad.IO.Class (MonadIO)
 
 import           Data.Text              (Text)
@@ -15,7 +19,8 @@ import           GHCJS.DOM.Types        (Float32Array, GLenum, JSM, MonadJSM,
                                          WebGLProgram, WebGLTexture)
 
 data GOL = GOL
-  { _golFrameBuffer :: WebGLFramebuffer
+  { _golFrameBufferA :: WebGLFramebuffer
+  , _golFrameBufferB :: WebGLFramebuffer
   , _golFront       :: WebGLTexture
   , _golBack        :: WebGLTexture
   , _golGOLProgram  :: WebGLProgram
@@ -25,6 +30,25 @@ data GOL = GOL
   , _golViewSize    :: Float32Array
   }
 makeClassy ''GOL
+
+newtype CubeRotation = CubeRot
+  { unCubeRot :: Double
+  }
+  deriving (Eq, Show, Num)
+makeWrapped ''CubeRotation
+
+data GOLCube = GOLCube
+  { _golCubeGOL            :: GOL
+  , _golCubeProgram        :: WebGLProgram
+  , _golCubeSqBuffer       :: WebGLBuffer
+  , _golCubeTxBuffer       :: WebGLBuffer
+  , _golCubeIxBuffer       :: WebGLBuffer
+  , _golCubeProjMatTexture :: Float32Array
+  , _golCubeProjMatPrimary :: Float32Array
+  , _golCubeCubeRotation   :: CubeRotation
+  , _golCubeColourBuffer   :: WebGLBuffer
+  }
+makeClassy ''GOLCube
 
 data Error
   = ShaderCompileError GLenum (Maybe Text)
@@ -45,3 +69,6 @@ newtype WebGLM a = WebGLM
 #endif
            , MonadError Error
            )
+
+liftGLM :: Either Error a -> WebGLM a
+liftGLM = either throwError pure

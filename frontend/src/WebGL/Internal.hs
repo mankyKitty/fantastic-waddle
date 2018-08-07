@@ -8,14 +8,21 @@ import           Control.Monad                       (unless, void)
 import           Control.Monad.Except                (throwError)
 
 import           Data.Bool                           (bool)
+import           Data.Foldable                       (foldMap, foldl', foldr')
 import           Data.Maybe                          (fromMaybe)
+import           Data.Semigroup                      (mconcat, (<>))
 import           Data.Text                           (Text)
-import           GHC.Word                            (Word8)
+import           GHC.Word                            (Word16, Word8)
+
+import           Linear.Matrix                       (M44)
+import           Linear.V4                           (V4 (..))
 
 import           GHCJS.DOM.Types                     (ArrayBuffer, Float32Array,
                                                       GLenum, GLfloat, GLint,
-                                                      GLsizei, JSString, JSVal,
-                                                      MonadJSM, Uint8Array,
+                                                      GLsizei, IsGObject,
+                                                      JSString, JSVal, MonadJSM,
+                                                      PToJSVal, ToJSVal,
+                                                      Uint16Array, Uint8Array,
                                                       WebGLBuffer, WebGLProgram,
                                                       WebGLRenderingContext,
                                                       WebGLShader, WebGLTexture)
@@ -27,6 +34,29 @@ import qualified GHCJS.DOM.Types                     as GHCJS
 import qualified GHCJS.DOM.WebGLRenderingContextBase as GLB
 
 import           WebGL.Types                         (Error (..), GOL, WebGLM)
+
+rowToCol
+  :: M44 Double
+  -> [Double]
+rowToCol
+  (V4
+    (V4 o o_i o_ii o_iii)
+    (V4 i_o i_i i_ii i_iii)
+    (V4 ii_o ii_i ii_ii ii_iii)
+    (V4 iii_o iii_i iii_ii iii_iii)
+  ) =
+  [ o, i_o, ii_o, iii_o
+  , o_i, i_i, ii_i, iii_i
+  , o_ii, i_ii, ii_ii, iii_ii
+  , o_iii, i_iii, ii_iii, iii_iii
+  ]
+
+matToF32Array
+  :: MonadJSM m
+  => M44 Double
+  -> m Float32Array
+matToF32Array =
+  toFloat32Array . rowToCol
 
 initShader
   :: GHCJS.GLenum
@@ -100,21 +130,39 @@ initTexture x y cx = do
 
   pure t
 
+toTypedArray
+  :: ( ToJSVal a
+     , IsGObject c
+     , MonadJSM m
+     )
+  => JSString
+  -> (JSVal -> c)
+  -> a
+  -> m c
+toTypedArray t c ds = GHCJS.liftJSM $ do
+  a <- JSO.new (JSO.jsg t) [ds]
+  GHCJS.unsafeCastTo c a
+
 toUint8Array
   :: MonadJSM m
   => [Word8]
   -> m Uint8Array
-toUint8Array ds = GHCJS.liftJSM $ do
-  a <- JSO.new (JSO.jsg ("Uint8Array" :: JSString)) [ds]
-  GHCJS.unsafeCastTo GHCJS.Uint8Array a
+toUint8Array =
+  toTypedArray "Uint8Array" GHCJS.Uint8Array
+
+toUint16Array
+  :: MonadJSM m
+  => [Word16]
+  -> m Uint16Array
+toUint16Array =
+  toTypedArray "Uint16Array" GHCJS.Uint16Array
 
 toFloat32Array
   :: MonadJSM m
   => [Double]
   -> m Float32Array
-toFloat32Array ds = GHCJS.liftJSM $ do
-  a <- JSO.new (JSO.jsg ("Float32Array" :: JSString)) [ds]
-  GHCJS.unsafeCastTo GHCJS.Float32Array a
+toFloat32Array =
+  toTypedArray "Float32Array" GHCJS.Float32Array
 
 toArrayBuffer
   :: MonadJSM m
@@ -125,17 +173,36 @@ toArrayBuffer unwrap fa = GHCJS.liftJSM $ do
   b <- unwrap fa JSO.! ("buffer" :: JSString)
   GHCJS.unsafeCastTo GHCJS.ArrayBuffer b
 
-createBuffer
-  :: MonadJSM m
-  => [Double]
+createBufferType
+  :: ( ToJSVal xs
+     , IsGObject arr
+     , PToJSVal arr
+     , MonadJSM m
+     )
+  => GLenum
+  -> xs
+  -> (xs -> m arr)
   -> WebGLRenderingContext
   -> m WebGLBuffer
-createBuffer arr cx = do
-  ab <- toFloat32Array arr >>= toArrayBuffer GHCJS.unFloat32Array
+createBufferType btype arr arrFn cx = do
+  ab <- arrFn arr >>= toArrayBuffer GHCJS.pToJSVal
   b <- GLB.createBuffer cx
-  GLB.bindBuffer cx GLB.ARRAY_BUFFER (Just b)
-  GLB.bufferData cx GLB.ARRAY_BUFFER (Just ab) GLB.STATIC_DRAW
+  GLB.bindBuffer cx btype (Just b)
+  GLB.bufferData cx btype (Just ab) GLB.STATIC_DRAW
   pure b
+
+createBuffer
+  :: ( ToJSVal xs
+     , IsGObject arr
+     , PToJSVal arr
+     , MonadJSM m
+     )
+  => xs
+  -> (xs -> m arr)
+  -> WebGLRenderingContext
+  -> m WebGLBuffer
+createBuffer =
+  createBufferType GLB.ARRAY_BUFFER
 
 attrib
   :: MonadJSM m
@@ -143,22 +210,34 @@ attrib
   -> WebGLBuffer
   -> GLint
   -> Maybe GLsizei
-  -> Lens' GOL WebGLProgram
-  -> GOL
+  -> Lens' a WebGLProgram
+  -> a
   -> WebGLRenderingContext
   -> m ()
-attrib nm val sz stride pl g cx = do
-  aLoc <- GLB.getAttribLocation cx (g ^? pl) nm
+attrib nm val sz stride prgL a cx = do
+  aLoc <- GLB.getAttribLocation cx (a ^? prgL) nm
   GLB.bindBuffer cx GLB.ARRAY_BUFFER (Just val)
-  GLB.enableVertexAttribArray cx (fromIntegral aLoc)
   GLB.vertexAttribPointer cx (fromIntegral aLoc) sz GLB.FLOAT False (fromMaybe 0 stride) 0
+  GLB.enableVertexAttribArray cx (fromIntegral aLoc)
+
+uniformMatrix4fv
+  :: MonadJSM m
+  => Text
+  -> Float32Array
+  -> Lens' a WebGLProgram
+  -> a
+  -> WebGLRenderingContext
+  -> m ()
+uniformMatrix4fv nm v pL g cx = do
+  uLoc <- GLB.getUniformLocation cx (g ^? pL) nm
+  GLB.uniformMatrix4fv cx (Just uLoc) False v
 
 uniform2fv
   :: MonadJSM m
   => Text
   -> Float32Array
-  -> Lens' GOL WebGLProgram
-  -> GOL
+  -> Lens' a WebGLProgram
+  -> a
   -> WebGLRenderingContext
   -> m ()
 uniform2fv nm v pL g cx = do
@@ -169,8 +248,8 @@ uniformF
   :: MonadJSM m
   => Text
   -> GLfloat
-  -> Lens' GOL WebGLProgram
-  -> GOL
+  -> Lens' a WebGLProgram
+  -> a
   -> WebGLRenderingContext
   -> m ()
 uniformF nm v pL g cx = do
@@ -183,8 +262,8 @@ uniformI
      )
   => Text
   -> n
-  -> Lens' GOL WebGLProgram
-  -> GOL
+  -> Lens' a WebGLProgram
+  -> a
   -> WebGLRenderingContext
   -> m ()
 uniformI nm v pL g cx = do
@@ -195,8 +274,8 @@ uniformB
   :: MonadJSM m
   => Text
   -> Bool
-  -> Lens' GOL WebGLProgram
-  -> GOL
+  -> Lens' a WebGLProgram
+  -> a
   -> WebGLRenderingContext
   -> m ()
 uniformB n b =

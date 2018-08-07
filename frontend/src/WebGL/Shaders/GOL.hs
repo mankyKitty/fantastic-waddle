@@ -5,10 +5,10 @@ module WebGL.Shaders.GOL
   , golQuadVertSrc
   ) where
 
-import Data.Text (Text)
-import qualified Data.Text as Text
+import           Data.Text      (Text)
+import qualified Data.Text      as Text
 
-import Data.Semigroup ((<>))
+import           Data.Semigroup ((<>))
 
 setFloatPrecision :: Text
 setFloatPrecision = Text.unlines
@@ -38,9 +38,11 @@ golFragSrc :: Text
 golFragSrc = setFloatPrecision <> Text.unlines
   [ "uniform sampler2D state;"
   , "uniform vec2 scale;"
+  , ""
   , "int get(int x, int y) {"
   , "    return int(texture2D(state, (gl_FragCoord.xy + vec2(x, y)) / scale).r);"
   , "}"
+  , ""
   , "void main() {"
   , "    int sum = get(-1, -1) +"
   , "              get(-1,  0) +"
@@ -50,6 +52,7 @@ golFragSrc = setFloatPrecision <> Text.unlines
   , "              get( 1, -1) +"
   , "              get( 1,  0) +"
   , "              get( 1,  1);"
+  , ""
   , "    if (sum == 3) {"
   , "        gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);"
   , "    } else if (sum == 2) {"

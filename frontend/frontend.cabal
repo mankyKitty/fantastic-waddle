@@ -41,9 +41,13 @@ library
                  , Canvas2D.Internal
 
                  , WebGL.GOL
+                 , WebGL.GOLCube
+
                  , WebGL.Types
+                 , WebGL.Statics
                  , WebGL.Internal
                  , WebGL.Shaders.GOL
+                 , WebGL.Shaders.GOLCube
 
                  , Styling.Bootstrap
 

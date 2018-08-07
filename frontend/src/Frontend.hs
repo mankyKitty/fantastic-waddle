@@ -17,6 +17,7 @@ import Data.Text (Text)
 import           Reflex.Dom.Core
 
 import           WebGL.GOL            (gol)
+import WebGL.GOLCube (golCube)
 
 import           Canvas2D.JoyDivision (joyDivision)
 import           Canvas2D.TiledLines  (tiledLines)
@@ -32,21 +33,22 @@ widg
   => m ()
   -> Text
   -> m (Event t (m ()))
-widg w txt = 
+widg w txt =
   (w <$) <$> B.bsButton_ txt B.Primary
 
 body :: StdGen -> Widget x ()
 body sGen = do
   divClass "container" $
     divClass "row" $ do
-    eWidgs <- divClass "col-2" $ sequenceA 
-      [ widg (squares sGen) "Squares" 
-      , widg tiledLines "Tiled Lines" 
-      , widg (joyDivision sGen) "Joy Division" 
+    eWidgs <- divClass "col-2" $ sequenceA
+      [ widg (squares sGen) "Squares"
+      , widg tiledLines "Tiled Lines"
+      , widg (joyDivision sGen) "Joy Division"
       , widg (gol sGen) "Game Of Life"
+      , widg (golCube sGen) "Game Of Life (Spicy!)"
       ]
 
-    _ <- 
+    _ <-
       divClass "col-10"
       . divClass "container"
         . divClass "row" $ widgetHold (squares sGen) (leftmost eWidgs)

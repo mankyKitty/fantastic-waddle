@@ -2,9 +2,7 @@
 {-# LANGUAGE OverloadedStrings         #-}
 {-# LANGUAGE RankNTypes                #-}
 {-# LANGUAGE RecursiveDo               #-}
-module WebGL.GOL
-  ( gol
-  ) where
+module WebGL.GOL where
 
 import           Control.Lens                        (Lens', (.~), (^.), (^?))
 import           Control.Monad.Except                (runExceptT)
@@ -41,7 +39,7 @@ import qualified Reflex.Dom.CanvasDyn                as C
 
 import qualified Styling.Bootstrap                   as B
 
-import           Internal                            ((<$$))
+import           Internal                            ((<$$),tshow)
 
 import           WebGL.Types                         (Error, GOL (..),
                                                       HasGOL (..))
@@ -49,9 +47,6 @@ import qualified WebGL.Types                         as GLT
 
 import qualified WebGL.Internal                      as GLI
 import qualified WebGL.Shaders.GOL                   as Shaders
-
-tshow :: Show a => a -> Text
-tshow = Text.pack . show
 
 quad2 :: [Double]
 quad2 = [-1, -1, 1, -1, -1, 1, 1, 1]
@@ -98,13 +93,29 @@ renderUsing w h texL prgL sizeL cx g = do
   GLB.drawArrays cx GLB.TRIANGLE_STRIP 0 4
   pure g
 
+stepRenderCopyTexture
+  :: MonadJSM m
+  => WebGLRenderingContext
+  -> GOL
+  -> m GOL
+stepRenderCopyTexture cx g = do
+  GLB.bindFramebuffer cx GLB.FRAMEBUFFER (g ^? golFrameBufferA)
+  GLB.framebufferTexture2D cx GLB.FRAMEBUFFER GLB.COLOR_ATTACHMENT0 GLB.TEXTURE_2D (g ^? golBack) 0
+  f <$> renderUsing scaledWidth scaledHeight golFront golGOLProgram golStateSize cx g
+  where
+    f g = g
+      & golFront .~ (g ^. golBack)
+      & golBack .~ (g ^. golFront)
+      & golFrameBufferB .~ (g ^. golFrameBufferA)
+      & golFrameBufferA .~ (g ^. golFrameBufferB)
+
 step
   :: MonadJSM m
   => WebGLRenderingContext
   -> GOL
   -> m GOL
 step cx g = do
-  GLB.bindFramebuffer cx GLB.FRAMEBUFFER (g ^? golFrameBuffer)
+  GLB.bindFramebuffer cx GLB.FRAMEBUFFER (g ^? golFrameBufferA)
   GLB.framebufferTexture2D cx GLB.FRAMEBUFFER GLB.COLOR_ATTACHMENT0 GLB.TEXTURE_2D (g ^? golBack) 0
   swap <$> renderUsing scaledWidth scaledHeight golFront golGOLProgram golStateSize cx g
 
@@ -114,6 +125,8 @@ draw
   -> GOL
   -> m GOL
 draw cx g = do
+  -- We're not rendering in 3D so turn it off
+  GLB.disable cx GLB.DEPTH_TEST
   GLB.bindFramebuffer cx GLB.FRAMEBUFFER Nothing
   renderUsing width height golFront golCopyProgram golViewSize cx g
 
@@ -121,17 +134,15 @@ createGOL
   :: MonadJSM m
   => WebGLRenderingContext
   -> m (Either Error GOL)
-createGOL cx = do
-  -- We're not rendering in 3D so turn it off
-  GLB.disable cx GLB.DEPTH_TEST
-
+createGOL cx =
   GHCJS.liftJSM . runExceptT . GLT.runWebGLM $ GLT.GOL
     <$> GLB.createFramebuffer cx
+    <*> GLB.createFramebuffer cx
     <*> GLI.initTexture scaledWidth scaledHeight cx
     <*> GLI.initTexture scaledWidth scaledHeight cx
     <*> GLI.initProgram Shaders.golQuadVertSrc Shaders.golFragSrc cx
     <*> GLI.initProgram Shaders.golQuadVertSrc Shaders.golCopyFragSrc cx
-    <*> GLI.createBuffer quad2 cx
+    <*> GLI.createBuffer quad2 GLI.toFloat32Array cx
     <*> GLI.toFloat32Array statesize
     <*> GLI.toFloat32Array viewsize
 
@@ -211,7 +222,6 @@ gol sGen = RD.divClass "gol" $ do
   eDrawn <- RD.requestDomAction $
     (\c -> setInitialState sGen c >=> draw c) <$> R.current dCx <@> eGol
 
-  -- Spicy!!
   rec dMGol <- R.holdDyn Nothing $ R.leftmost
         [ Just <$> eGol
         , eStepRendered
@@ -219,7 +229,7 @@ gol sGen = RD.divClass "gol" $ do
         ]
 
       eStepRendered <- runGL dCx dMGol step (R.switchDyn dTick)
-      eWasReset <- runGL dCx dMGol (setInitialState sGen) eReset
+      eWasReset     <- runGL dCx dMGol (setInitialState sGen) eReset
 
   dRendered <- R.holdDyn "Nothing Yet" $
     ("Rendered!" <$ eDrawn) <>
