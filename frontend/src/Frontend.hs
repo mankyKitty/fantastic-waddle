@@ -12,18 +12,19 @@ module Frontend
 import           System.Random        (StdGen)
 
 import           Data.Semigroup       ((<>))
-import Data.Text (Text)
+import           Data.Text            (Text)
 
 import           Reflex.Dom.Core
 
 import           WebGL.GOL            (gol)
-import WebGL.GOLCube (golCube)
+import           WebGL.GOLCube        (golCube)
 
 import           Canvas2D.JoyDivision (joyDivision)
 import           Canvas2D.TiledLines  (tiledLines)
 
-import           SVG.Squares              (squares)
+import           SVG.Squares          (squares)
 
+import           Internal             ((<$$))
 import qualified Styling.Bootstrap    as B
 
 import           Static
@@ -34,7 +35,7 @@ widg
   -> Text
   -> m (Event t (m ()))
 widg w txt =
-  (w <$) <$> B.bsButton_ txt B.Primary
+  w <$$ B.bsButton_ txt B.Primary
 
 body :: StdGen -> Widget x ()
 body sGen = do
@@ -55,13 +56,13 @@ body sGen = do
     blank
   blank
 
+cssLink ss = elAttr "link" ("rel" =: "stylesheet" <> "href" =: ss) blank
+
 headStatic :: StaticWidget x ()
 headStatic = do
   cssLink (static @"css/reflexive-art.css")
   cssLink "css/bootstrap.min.css"
   el "title" $ text "Oh my"
-  where
-    cssLink ss = elAttr "link" ("rel" =: "stylesheet" <> "href" =: ss) blank
 
 frontend :: StdGen -> (StaticWidget x (), Widget x ())
 frontend sGen =

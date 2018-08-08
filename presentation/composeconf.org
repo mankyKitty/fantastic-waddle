@@ -1,0 +1,40 @@
+#+REVEAL_ROOT: http://cdn.jsdelivr.net/reveal.js/3.0.0/
+#+OPTIONS: reveal_title_slide:"<h1>%t</h1><h2>%a</h2><h3>%e</h3>"
+#+OPTIONS: num:nil
+#+OPTIONS: toc:nil
+
+#+TITLE: Reflexive Art
+#+AUTHOR: Sean Chalmers
+#+EMAIL: sean.chalmers@data61.csiro.au
+
+* The Goals
+ - Introduce Reflex =svg= and =canvas= libraries.
+ - Demonstrate that Haskell is more than capable of art & animation.
+ - Encourage / inspire you to take the plunge!
+
+* Generative and Evolutionary Art
+ - Largely autonomous
+ - Often emergent
+ - Yet another fascinating rabbit hole
+
+** 
+#+DOWNLOADED: http://www.complexification.net/gallery/machines/substrate/substrate0014.jpg @ 2018-08-08 11:46:12
+[[file:genEvoArt/substrate0014_2018-08-08_11-46-12.jpg]]
+
+- Title: *Substrate*
+- Source: [[http://www.complexification.net/gallery/machines/substrate/index.php][Complexification]] 
+
+** 
+#+DOWNLOADED: http://www.entagma.com/wp-content/uploads/2016/09/hairball_mantra_10_1.jpg @ 2018-08-08 11:55:33
+[[file:genEvoArt/hairball_mantra_10_1_2018-08-08_11-55-33.jpg]]
+
+- Title: *Coloured Trails (Point Advection & Rendering)*
+- Source: [[http://www.entagma.com/colored-trails-point-advection-rendering/][Entagma]]
+
+** 
+#+ATTR_HTML: :width 40% :height 40%
+file:genEvoArt/tiledLines.png
+
+- Title: *Tiled Lines*
+- Image: [[https://github.com/mankyKitty/fantastic-waddle][This Presentation]] 
+- Technique: [[https://generativeartistry.com/tutorials/tiled-lines][Generative Artistry]]

@@ -5,11 +5,22 @@ let
 
   bootstrap4 = import ./nix/twitterBootstrap4.nix;
 
+  staticAssets = pkgs.stdenv.mkDerivation {
+    name = "FantasticWaddleCSS";
+    version = "0.0.1";
+    src = ./static;
+    dontBuild = true;
+    installPhase = ''
+      mkdir -p $out/css
+      cp -R css/* $out/css/
+    '';
+  };
+
   buildFrontend = minFe: pkgs.runCommand "buildFrontend" { buildInputs = [ pkgs.zopfli ]; } ''
     mkdir -p $out
     mkdir -p $out/css
 
-    ln -s ${ob}/static/css/reflexive-art.css $out/css/reflexive-art.css
+    ln -s ${staticAssets}/css/* $out/css/
     ln -s ${bootstrap4.out}/css/bootstrap.min.css $out/css/bootstrap.min.css
     ln -s ${bootstrap4.out}/css/bootstrap.min.css.map $out/css/bootstrap.min.css.map
 
@@ -21,9 +32,10 @@ let
     zopfli -i1000 all.min.js
   '';
 
-  minifiedOut = {
+  out = {
     # Version 3
+    staticAssets = staticAssets;
     minifiedFrontend = buildFrontend (ob.obelisk.compressedJs ob.ghcjs.frontend);
   };
 in
-  minifiedOut.minifiedFrontend
+  out

@@ -5,15 +5,16 @@ module WebGL.GOLCube
   ( golCube
   ) where
 
-import           Control.Lens                        (Getting, Lens', Lens, traverseOf, _Just,
-                                                      makeClassy, over, (+~),
-                                                      (^.), (^?), _Wrapped)
+import           Control.Lens                        (Getting, Lens, Lens',
+                                                      makeClassy, over, mapped, (.~),
+                                                      traverseOf, (+~), (^.),
+                                                      (^?), _Just, _Wrapped)
 import           Control.Monad                       ((>=>))
-import Control.Monad.IO.Class (liftIO)
 import           Control.Monad.Except                (ExceptT (..), runExceptT)
+import           Control.Monad.IO.Class              (liftIO)
 
-import Data.Bool (bool)
 import           Data.Bits                           ((.|.))
+import           Data.Bool                           (bool)
 import           Data.Function                       ((&))
 import           Data.Semigroup                      ((<>))
 import           System.Random                       (StdGen)
@@ -40,23 +41,24 @@ import           GHCJS.DOM.Types                     (Float32Array (..),
                                                       WebGLRenderingContext,
                                                       WebGLTexture, liftJSM)
 import qualified GHCJS.DOM.WebGLRenderingContextBase as Gl
-import Language.Javascript.JSaddle (valToStr)
+import           Language.Javascript.JSaddle         (valToStr)
 import           Reflex.Dom.CanvasBuilder.Types      (CanvasConfig (..),
                                                       CanvasInfo (..))
 import qualified Reflex.Dom.CanvasDyn                as C
 
 import qualified Styling.Bootstrap                   as B
 
-import           Internal                            (tshow, (<$$))
+import           Internal                            (tshow, (<$$), (<$$>))
 import           WebGL.GOL                           as GOL
 import           WebGL.Internal                      as GI
 import qualified WebGL.Shaders.GOLCube               as Shaders
-import           WebGL.Statics                       (cubePositions, indices,
-                                                      wrappedTex, flatColours)
+import           WebGL.Statics                       (cubePositions,
+                                                      flatColours, indices,
+                                                      wrappedTex)
 import           WebGL.Types                         (CubeRotation (..), Error,
                                                       GOL (..), GOLCube (..),
-                                                      HasGOL (..), liftGLM,
-                                                      HasGOLCube (..),
+                                                      HasGOL (..),
+                                                      HasGOLCube (..), liftGLM,
                                                       runWebGLM)
 -- |
 -- Rework of the example at <https://github.com/mdn/webgl-examples/blob/gh-pages/tutorial/sample6/webgl-demo.js Textured Cube Example>
@@ -146,8 +148,8 @@ createGOLCube
   :: MonadJSM m
   => WebGLRenderingContext
   -> m (Either Error GOLCube)
-createGOLCube cx = liftJSM . runExceptT $ runWebGLM
-  (GOL.createGOL cx >>= liftGLM >>= f)
+createGOLCube cx = liftJSM . runExceptT . runWebGLM $
+  GOL.createGOL cx >>= liftGLM >>= f
   where
     f g = GOLCube
       <$> pure g
@@ -163,43 +165,30 @@ createGOLCube cx = liftJSM . runExceptT $ runWebGLM
     primAspect = GOL.width / GOL.height
     texAspect = fromIntegral GOL.scaledWidth / fromIntegral GOL.scaledHeight
 
-runGLCube
-  :: ( RD.DomRenderHook t m
-     , RD.MonadWidget t m
-     )
-  => Dynamic t WebGLRenderingContext
-  -> Dynamic t (Maybe GOLCube)
-  -> (WebGLRenderingContext -> GOLCube -> JSM GOLCube)
-  -> Event t a
-  -> m (Event t (Maybe GOLCube))
-runGLCube dCx dMGol glF eGo = RD.requestDomAction $
-  (\c g -> traverse (glF c >=> golCubeDraw c) g)
-  <$> R.current dCx
-  <*> R.current dMGol
-  <@ eGo
-
 golCube :: StdGen -> Widget x ()
 golCube sGen = RD.divClass "gol-cube" $ do
   ePost <- RD.getPostBuild
   eTick <- () <$$ RD.tickLossyFromPostBuildTime 0.1
 
-  eStep <- B.bsButton_ "Step" B.Primary
+  eReset      <- B.bsButton_ "Reset Game" B.Primary
+  eStep       <- B.bsButton_ "Single Step" B.Primary
+  eToggleAnim <- B.bsButton_ "Toggle Animation" B.Primary
+
+  dTick <- bool eStep eTick <$$> R.toggle False eToggleAnim
 
   (canvas, _) <- RD.divClass "canvas-wrapper" $ RD.elAttr' "canvas"
     ( "height" =: tshow (height :: Int) <>
       "width"  =: tshow (width :: Int) <>
-      "background-color" =: "black" <>
       "class"  =: "gol-canvas"
     )
     RD.blank
 
-  dCx <- fmap _canvasInfo_context <$>
-    C.dContextWebgl (CanvasConfig canvas [])
+  dCx <- _canvasInfo_context <$$> C.dContextWebgl (CanvasConfig canvas [])
 
-  (eError, eGol) <- fmap R.fanEither <$> RD.requestDomAction $
-    createGOLCube <$> R.current dCx <@ ePost
+  (eError, eGol) <- R.fanEither <$$> RD.requestDomAction $
+    R.current (createGOLCube <$> dCx) <@ ePost
 
-  eDrawn <- RD.requestDomAction $
+  eInitialDraw <- RD.requestDomAction $
     (\c g -> do
         GOL.setInitialState sGen c (g ^. golCubeGOL)
         golCubeDraw c g
@@ -208,17 +197,30 @@ golCube sGen = RD.divClass "gol-cube" $ do
     <@> eGol
 
   rec dMGol <- R.holdDyn Nothing $ R.leftmost
-        [ Just <$> eGol
+        [ pure <$> eGol
+        , eWasReset
         , eStepRendered
         ]
 
+      eWasReset <- RD.requestDomAction $
+        R.current ( (\cx ->
+                       -- Set the rotation of the cube back to zero
+                       -- (mapped . _Just . golCubeCubeRotation . _Wrapped .~ 0.0) .
+                       -- Reset the Game of Life back to an initial random state
+                       traverseOf (traverse . golCubeGOL) (GOL.setInitialState sGen cx)
+                    )
+                    <$> dCx
+                    <*> dMGol
+                  )
+        <@ eReset
+
       eStepRendered <- RD.requestDomAction $
         R.current (
-          (\c -> traverse (traverseOf golCubeGOL (GOL.stepRenderCopyTexture c) >=> golCubeDraw c))
+          (\cx -> traverse (traverseOf golCubeGOL (GOL.stepRenderCopyTexture cx) >=> golCubeDraw cx))
             <$> dCx
             <*> dMGol
           )
-        <@ eTick
+        <@ R.switchDyn dTick
 
   dStatus <- R.holdDyn "Nothing Yet" $ R.leftmost
     [ ("Bugger: " <>) . tshow <$> eError
@@ -226,7 +228,7 @@ golCube sGen = RD.divClass "gol-cube" $ do
     ]
 
   dRendered <- R.holdDyn "Nothing Yet" $
-    ("Rendered!" <$ eDrawn) <>
+    ("Rendered!" <$ eInitialDraw) <>
     ("Stepped!"  <$ eStepRendered)
 
   RD.divClass "status" (RD.dynText dStatus)

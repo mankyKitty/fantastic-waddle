@@ -51,8 +51,8 @@ import           Reflex.Dom.Widget.SVG.Types          (Height, Pos,
 import qualified Reflex.Dom.Widget.SVG.Types          as SVGT
 import qualified Reflex.Dom.Widget.SVG.Types.SVG_Path as P
 
-import Internal ((<$$))
-import qualified Styling.Bootstrap as B
+import           Internal                             ((<$$))
+import qualified Styling.Bootstrap                    as B
 
 data World = World
   { _worldHeight :: Height

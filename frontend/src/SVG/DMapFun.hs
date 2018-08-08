@@ -12,12 +12,13 @@
 {-# LANGUAGE RankNTypes             #-}
 module DMapFun where
 
-import Numeric (showFFloatAlt)
+import           Numeric               (showFFloatAlt)
 
-import           Control.Lens          (At (..), Index (..), IxValue, Ixed (..), LensLike',
-                                        Lens', Traversal', Setter', makeLenses,
-                                        makeWrapped, mapped, over, to, (%~), (?~), (.~), (%%~),
-                                        (&), _Wrapped, (<&>))
+import           Control.Lens          (At (..), Index (..), IxValue, Ixed (..),
+                                        Lens', LensLike', Setter', Traversal',
+                                        makeLenses, makeWrapped, mapped, over,
+                                        to, (%%~), (%~), (&), (.~), (<&>), (?~),
+                                        _Wrapped)
 import           Data.Dependent.Map
 import qualified Data.Dependent.Map    as DM
 import           Data.GADT.Compare.TH  (deriveGCompare, deriveGEq)

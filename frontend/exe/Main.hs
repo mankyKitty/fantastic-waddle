@@ -11,4 +11,3 @@ main
 main = do
   initialGen <- getStdGen
   mainWidget (body initialGen)
-  -- mainWidgetWithHead headWidget (body initialGen)

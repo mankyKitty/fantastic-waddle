@@ -4,9 +4,11 @@
 {-# LANGUAGE RecursiveDo       #-}
 module Canvas2D.JoyDivision where
 
-import           Prelude                            (Double, Float, Num, Int, abs, show, floor,
-                                                     div, max, realToFrac, snd, fromIntegral,
-                                                     (*), (+), (-), (/))
+import           Prelude                            (Double, Float, Int, Num,
+                                                     abs, div, floor,
+                                                     fromIntegral, max,
+                                                     realToFrac, show, snd, (*),
+                                                     (+), (-), (/))
 
 import           Control.Applicative                (liftA3, pure, (<*>))
 import           Control.Category                   ((.))
@@ -26,7 +28,7 @@ import           Data.Maybe                         (fromMaybe)
 import           Data.Semigroup                     ((<>))
 
 import           Data.Text                          (Text)
-import qualified Data.Text as Text
+import qualified Data.Text                          as Text
 
 import           Data.Map                           (Map)
 
@@ -48,13 +50,14 @@ import qualified Reflex.Dom.Core                    as RD
 import qualified Reflex.Dom.CanvasDyn               as C
 
 import qualified GHCJS.DOM.CanvasPath               as DOM_CP
+import           GHCJS.DOM.Types                    (JSM, MonadJSM, liftJSM)
 
 import           GHCJS.DOM.CanvasRenderingContext2D (CanvasRenderingContext2D)
 import qualified GHCJS.DOM.CanvasRenderingContext2D as DOM_CR
 
-import           GHCJS.DOM.Types                    (JSM, MonadJSM, liftJSM)
+import qualified Canvas2D.Internal                  as CI
+import           Internal                           (tshow)
 import qualified Styling.Bootstrap                  as B
-import qualified Canvas2D.Internal as CI
 
 newtype Lines = Lines
   { unLines :: Vector (Vector (V2 Double))
@@ -78,7 +81,7 @@ canvasAttrs =
   "height" =: s <>
   "width"  =: s
   where
-    s = Text.pack . show $ (canvasSize :: Int)
+    s = tshow (canvasSize :: Int)
 
 initialLines :: Lines
 initialLines =
@@ -211,7 +214,7 @@ joyDivision sGen = do
     -- Variance bound range adjustment
     (RD.divClass "slider" $ dRange "Variance" "variance" 50 $ \m -> m
       & at "min" ?~ "0"
-      & at "max" ?~ Text.pack (show (paintingSize / 4 ::Double))
+      & at "max" ?~ tshow (paintingSize / 4 ::Double)
       & at "step" ?~ "1"
     )
 

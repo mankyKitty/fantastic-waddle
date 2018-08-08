@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>Reflexive Art</title>
+<meta name="author" content="(Sean Chalmers)"/>
+<style type="text/css">
+.underline { text-decoration: underline; }
+</style>
+<link rel="stylesheet" href="http://cdn.jsdelivr.net/reveal.js/3.0.0/css/reveal.css"/>
+
+<link rel="stylesheet" href="http://cdn.jsdelivr.net/reveal.js/3.0.0/css/theme/moon.css" id="theme"/>
+
+
+<!-- If the query includes 'print-pdf', include the PDF print sheet -->
+<script>
+    if( window.location.search.match( /print-pdf/gi ) ) {
+        var link = document.createElement( 'link' );
+        link.rel = 'stylesheet';
+        link.type = 'text/css';
+        link.href = 'http://cdn.jsdelivr.net/reveal.js/3.0.0/css/print/pdf.css';
+        document.getElementsByTagName( 'head' )[0].appendChild( link );
+    }
+</script>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+<section id="sec-title-slide"><h1>Reflexive Art</h1><h2>Sean Chalmers</h2><h3><a href="mailto:sean.chalmers@data61.csiro.au">sean.chalmers@data61.csiro.au</a></h3>
+</section>
+
+<section>
+<section id="slide-org9e31dc5">
+<h2 id="org9e31dc5">The Goals</h2>
+<ul>
+<li>Introduce Reflex <code>svg</code> and <code>canvas</code> libraries.</li>
+<li>Demonstrate that Haskell is more than capable of art &amp; animation.</li>
+<li>Encourage / inspire you to take the plunge!</li>
+
+</ul>
+
+</section>
+</section>
+<section>
+<section id="slide-orgf622924">
+<h2 id="orgf622924">Generative and Evolutionary Art</h2>
+<ul>
+<li>Largely autonomous</li>
+<li>Often emergent</li>
+
+</ul>
+
+</section>
+<section id="slide-org6812a90">
+<h3 id="org6812a90"></h3>
+
+<div class="figure">
+<p><img src="genEvoArt/substrate0014_2018-08-08_11-46-12.jpg" alt="substrate0014_2018-08-08_11-46-12.jpg" />
+</p>
+</div>
+
+<ul>
+<li>Title: <b>Substrate</b></li>
+<li>Source: <a href="http://www.complexification.net/gallery/machines/substrate/index.php">Complexification</a></li>
+
+</ul>
+
+</section>
+<section id="slide-org94d400a">
+<h3 id="org94d400a"></h3>
+
+<div class="figure">
+<p><img src="genEvoArt/hairball_mantra_10_1_2018-08-08_11-55-33.jpg" alt="hairball_mantra_10_1_2018-08-08_11-55-33.jpg" />
+</p>
+</div>
+
+<ul>
+<li>Title: <b>Coloured Trails (Point Advection &amp; Rendering)</b></li>
+<li>Source: <a href="http://www.entagma.com/colored-trails-point-advection-rendering/">Entagma</a></li>
+
+</ul>
+
+</section>
+<section id="slide-org0f9e550">
+<h3 id="org0f9e550"></h3>
+
+<div class="figure">
+<p><img src="genEvoArt/tiledLines.png" alt="tiledLines.png" width="40%" height="40%" />
+</p>
+</div>
+
+<ul>
+<li>Title: <b>Tiled Lines</b></li>
+<li>Image: <a href="https://github.com/mankyKitty/fantastic-waddle">This Presentation</a></li>
+<li>Technique: <a href="https://generativeartistry.com/tutorials/tiled-lines">Generative Artistry</a></li>
+
+</ul>
+</section>
+</section>
+</div>
+</div>
+<script src="http://cdn.jsdelivr.net/reveal.js/3.0.0/lib/js/head.min.js"></script>
+<script src="http://cdn.jsdelivr.net/reveal.js/3.0.0/js/reveal.js"></script>
+
+<script>
+// Full list of configuration options available here:
+// https://github.com/hakimel/reveal.js#configuration
+Reveal.initialize({
+
+controls: true,
+progress: true,
+history: false,
+center: true,
+slideNumber: 'c',
+rollingLinks: false,
+keyboard: true,
+overview: true,
+
+theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+transition: Reveal.getQueryHash().transition || 'default', // default/cube/page/concave/zoom/linear/fade/none
+transitionSpeed: 'default',
+multiplex: {
+    secret: '', // null if client
+    id: '', // id, obtained from socket.io server
+    url: '' // Location of socket.io server
+},
+
+// Optional libraries used to extend on reveal.js
+dependencies: [
+ { src: 'http://cdn.jsdelivr.net/reveal.js/3.0.0/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+ { src: 'http://cdn.jsdelivr.net/reveal.js/3.0.0/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+ { src: 'http://cdn.jsdelivr.net/reveal.js/3.0.0/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+ { src: 'http://cdn.jsdelivr.net/reveal.js/3.0.0/plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+ { src: 'http://cdn.jsdelivr.net/reveal.js/3.0.0/plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }]
+});
+</script>
+</body>
+</html>

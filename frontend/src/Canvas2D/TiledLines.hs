@@ -18,7 +18,7 @@ import           Control.Monad.IO.Class             (liftIO)
 import qualified System.Random                      as Rnd
 
 import qualified Reflex                             as R
-import           Reflex.Dom.Core                    (Widget, (=:), (<@))
+import           Reflex.Dom.Core                    (Widget, (<@), (=:))
 import qualified Reflex.Dom.Core                    as RD
 
 import qualified GHCJS.DOM.CanvasPath               as DOM_CP
@@ -30,6 +30,8 @@ import           GHCJS.DOM.CanvasRenderingContext2D (CanvasRenderingContext2D)
 import qualified GHCJS.DOM.CanvasRenderingContext2D as DOM_CR
 
 import qualified Reflex.Dom.CanvasDyn               as C
+
+import           Internal                           (tshow, (<$$>))
 
 import qualified Canvas2D.Internal                  as CI
 import qualified Styling.Bootstrap                  as B
@@ -52,7 +54,7 @@ size :: Int
 size = 600
 
 step :: Int
-step = 100
+step = 600
 
 cWid :: Wid
 cWid = Width size
@@ -62,8 +64,8 @@ cHei = Height size
 
 canvasAttrs :: Map Text Text
 canvasAttrs =
-  "width" =: (Text.pack . show . unWid $ cWid) <>
-  "height" =: (Text.pack . show . unHei $ cHei)
+  "width" =: (tshow . unWid $ cWid) <>
+  "height" =: (tshow . unHei $ cHei)
 
 ltor :: MonadJSM m => m LR
 ltor = bool RtoL LtoR . (>= (0.5::Double)) <$> liftIO Rnd.randomIO
@@ -104,11 +106,10 @@ draw x y s cap'd cx =
       RtoL -> ln (x' + s') y' x' (y' + s') "palevioletred" (-45)
 
 decSize,incSize :: Int -> Int
-incSize = (+10)
+incSize   = (+10)
 decSize n = if (n - 10) == 0 then n else n - 10
 
-tiledLines
-  :: Widget x ()
+tiledLines :: Widget x ()
 tiledLines = do
   ePost <- RD.getPostBuild
 
@@ -123,29 +124,27 @@ tiledLines = do
 
       DOM_CR.stroke cx
 
-  (dStep, dCap, eStep) <- RD.divClass "row" $ do
+  (dStep, dCap, eStep) <- B.contained $ do
     eInc <- B.bsButton_ "+ Step" B.Primary
     eDec <- B.bsButton_ "- Step" B.Primary
     eCap <- B.bsButton_ "Caps" B.Secondary
 
-    dCapped <- fmap (bool NoCap Cap) <$> RD.toggle False eCap
+    dCapped <- bool NoCap Cap <$$> RD.toggle False eCap
 
     dStep <- R.foldDyn ($) step $ R.mergeWith (.)
       [ incSize <$ eInc
       , decSize <$ eDec
       ]
 
-    _ <- RD.dynText $ ("Step: " <>) . (Text.pack . show) <$> dStep
-
     pure (dStep, dCapped, eInc <> eDec <> eCap)
 
-  dCx <- RD.divClass "row" $
+  dCx <- B.contained $ do
+    RD.dynText $ ("Step: " <>) . tshow <$> dStep
     CI.createCanvasForCx canvasAttrs
 
-  _ <- RD.requestDomAction $ drawSteps 
-    <$> R.current dStep 
-    <*> R.current dCap 
-    <*> R.current dCx 
-    <@ (ePost <> eStep)
+  _ <- RD.requestDomAction $ R.current (
+    drawSteps <$> dStep <*> dCap <*> dCx
+    )
+    <@ ( ePost <> eStep )
 
   pure ()

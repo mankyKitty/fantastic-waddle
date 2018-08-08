@@ -2,6 +2,7 @@
 module Styling.Bootstrap
   ( BSStyle (..)
   , styleClass
+  , contained
 
   , bsButton
   , bsButton_
@@ -36,3 +37,6 @@ bsButton sty child = over (mapped . _1) (RD.domEvent RD.Click)
 
 bsButton_ :: MonadWidget t m => Text -> BSStyle -> m (Event t ())
 bsButton_ l sty = fst <$> bsButton sty (RD.text l)
+
+contained :: MonadWidget t m => m a -> m a
+contained = RD.divClass "row" . RD.divClass "container"
