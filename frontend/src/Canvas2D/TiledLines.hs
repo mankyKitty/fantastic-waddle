@@ -127,7 +127,7 @@ tiledLines = do
   (dStep, dCap, eStep) <- B.contained $ do
     eInc <- B.bsButton_ "+ Step" B.Primary
     eDec <- B.bsButton_ "- Step" B.Primary
-    eCap <- B.bsButton_ "Caps" B.Secondary
+    eCap <- B.bsButton_ "Toggle Ellipses" B.Secondary
 
     dCapped <- bool NoCap Cap <$$> RD.toggle False eCap
 
@@ -136,14 +136,17 @@ tiledLines = do
       , decSize <$ eDec
       ]
 
-    pure (dStep, dCapped, eInc <> eDec <> eCap)
+    pure (dStep, dCapped, eInc <> eDec)
 
   dCx <- B.contained $ do
     RD.dynText $ ("Step: " <>) . tshow <$> dStep
     CI.createCanvasForCx canvasAttrs
 
   _ <- RD.requestDomAction $ R.current (
-    drawSteps <$> dStep <*> dCap <*> dCx
+    drawSteps
+      <$> dStep
+      <*> dCap
+      <*> dCx
     )
     <@ ( ePost <> eStep )
 

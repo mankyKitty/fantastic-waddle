@@ -1,7 +1,6 @@
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RankNTypes        #-}
-{-# LANGUAGE RecursiveDo       #-}
 module Canvas2D.JoyDivision where
 
 import           Prelude                            (Double, Float, Int, Num,
@@ -227,9 +226,9 @@ joyDivision sGen = do
 
   let eBoop = ePost <> eWib
 
-  rec dGen <- R.foldDyn ($) sGen $ R.mergeWith (.)
-        [ snd . Rnd.next <$ eBoop
-        ]
+  dGen <- R.foldDyn ($) sGen $ R.mergeWith (.)
+    [ snd . Rnd.next <$ eBoop
+    ]
 
   let
     dWibble = applyWibbleWithVariance initialLines
