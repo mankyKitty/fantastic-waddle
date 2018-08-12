@@ -1,6 +1,7 @@
 {-# LANGUAGE CPP                        #-}
-{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleContexts           #-}
 {-# LANGUAGE FlexibleInstances          #-}
+{-# LANGUAGE FunctionalDependencies     #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE MultiParamTypeClasses      #-}
 {-# LANGUAGE TemplateHaskell            #-}
@@ -16,18 +17,20 @@ import           Data.Text              (Text)
 
 import           GHCJS.DOM.Types        (Float32Array, GLenum, JSM, MonadJSM,
                                          WebGLBuffer, WebGLFramebuffer,
-                                         WebGLProgram, WebGLTexture)
+                                         WebGLProgram, WebGLRenderingContext,
+                                         WebGLTexture)
+import           Reflex.Dom.Core        (Dynamic, Event)
 
 data GOL = GOL
   { _golFrameBufferA :: WebGLFramebuffer
   , _golFrameBufferB :: WebGLFramebuffer
-  , _golFront       :: WebGLTexture
-  , _golBack        :: WebGLTexture
-  , _golGOLProgram  :: WebGLProgram
-  , _golCopyProgram :: WebGLProgram
-  , _golQuad        :: WebGLBuffer
-  , _golStateSize   :: Float32Array
-  , _golViewSize    :: Float32Array
+  , _golFront        :: WebGLTexture
+  , _golBack         :: WebGLTexture
+  , _golGOLProgram   :: WebGLProgram
+  , _golCopyProgram  :: WebGLProgram
+  , _golQuad         :: WebGLBuffer
+  , _golStateSize    :: Float32Array
+  , _golViewSize     :: Float32Array
   }
 makeClassy ''GOL
 
@@ -46,9 +49,17 @@ data GOLCube = GOLCube
   , _golCubeProjMatTexture :: Float32Array
   , _golCubeProjMatPrimary :: Float32Array
   , _golCubeCubeRotation   :: CubeRotation
-  , _golCubeColourBuffer   :: WebGLBuffer
   }
 makeClassy ''GOLCube
+
+data CubeInfo t = CubeInfo
+  { _cubeInfoCx     :: Dynamic t WebGLRenderingContext
+  , _cubeInfoReset  :: Event t ()
+  , _cubeInfoTick   :: Dynamic t (Event t ())
+  , _cubeInfoToggle :: Event t ()
+  , _cubeInfoPost   :: Event t ()
+  }
+makeClassy ''CubeInfo
 
 data Error
   = ShaderCompileError GLenum (Maybe Text)
