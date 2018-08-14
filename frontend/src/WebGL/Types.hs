@@ -15,6 +15,7 @@ import           Control.Monad.IO.Class (MonadIO)
 
 import           Data.Text              (Text)
 
+import Linear (V3)
 import           GHCJS.DOM.Types        (Float32Array, GLenum, JSM, MonadJSM,
                                          WebGLBuffer, WebGLFramebuffer,
                                          WebGLProgram, WebGLRenderingContext,
@@ -53,11 +54,15 @@ data GOLCube = GOLCube
 makeClassy ''GOLCube
 
 data CubeInfo t = CubeInfo
-  { _cubeInfoCx     :: Dynamic t WebGLRenderingContext
-  , _cubeInfoReset  :: Event t ()
-  , _cubeInfoTick   :: Dynamic t (Event t ())
-  , _cubeInfoToggle :: Event t ()
-  , _cubeInfoPost   :: Event t ()
+  { _cubeInfoCx         :: Dynamic t WebGLRenderingContext
+  , _cubeInfoReset      :: Event t ()
+  , _cubeInfoTick       :: Dynamic t (Event t ())
+  , _cubeInfoToggleAnim :: Event t ()
+  , _cubeInfoPost       :: Event t ()
+  , _cubeInfoUpPress    :: Event t (V3 Double -> V3 Double)
+  , _cubeInfoDownPress  :: Event t (V3 Double -> V3 Double)
+  , _cubeInfoRightPress  :: Event t (V3 Double -> V3 Double)
+  , _cubeInfoLeftPress  :: Event t (V3 Double -> V3 Double)
   }
 makeClassy ''CubeInfo
 

@@ -8,13 +8,14 @@ import           Control.Monad                       (unless, void)
 import           Control.Monad.Except                (throwError)
 
 import           Data.Bool                           (bool)
-import           Data.Foldable                       (foldMap, foldl', foldr')
+import           Data.Foldable                       (foldMap,
+                                                      toList)
 import           Data.Maybe                          (fromMaybe)
 import           Data.Semigroup                      (mconcat, (<>))
 import           Data.Text                           (Text)
 import           GHC.Word                            (Word16, Word8)
 
-import           Linear.Matrix                       (M44)
+import           Linear.Matrix                       (M44, transpose)
 import           Linear.V4                           (V4 (..))
 
 import           GHCJS.DOM.Types                     (ArrayBuffer, Float32Array,
@@ -35,28 +36,14 @@ import qualified GHCJS.DOM.WebGLRenderingContextBase as GLB
 
 import           WebGL.Types                         (Error (..), GOL, WebGLM)
 
-rowToCol
-  :: M44 Double
-  -> [Double]
-rowToCol
-  (V4
-    (V4 o o_i o_ii o_iii)
-    (V4 i_o i_i i_ii i_iii)
-    (V4 ii_o ii_i ii_ii ii_iii)
-    (V4 iii_o iii_i iii_ii iii_iii)
-  ) =
-  [ o, i_o, ii_o, iii_o
-  , o_i, i_i, ii_i, iii_i
-  , o_ii, i_ii, ii_ii, iii_ii
-  , o_iii, i_iii, ii_iii, iii_iii
-  ]
-
 matToF32Array
   :: MonadJSM m
   => M44 Double
   -> m Float32Array
 matToF32Array =
-  toFloat32Array . rowToCol
+  toFloat32Array
+  . foldMap toList
+  . transpose -- just an alias for distribute
 
 initShader
   :: GHCJS.GLenum

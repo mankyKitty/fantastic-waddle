@@ -169,59 +169,44 @@ drawLines (Lines xxs) lineFn cx = liftJSM $ do
     lineFn cx xs
     DOM_CR.stroke cx
 
-rangeConf :: R.Reflex t => Float -> Text -> RD.RangeInputConfig t
-rangeConf i id' = RD.RangeInputConfig i R.never . pure
-  $ "class" =: "range-input form-control"
-  <> "id" =: id'
-
-dRange
-  :: MonadWidget t m
-  => Text
-  -> Text
-  -> Float
-  -> (Map Text Text -> Map Text Text)
-  -> m (RangeInput t)
-dRange lbl id' i f =
-  RD.divClass "form-group" $ do
-    RD.elAttr "label" ("for" =: id') $ RD.text lbl
-    r <- RD.rangeInput $ rangeConf i id' & RD.rangeInputConfig_attributes . mapped %~ f
-    RD.display (r ^. RD.rangeInput_value)
-    pure r
-
 joyDivision :: StdGen -> Widget x ()
 joyDivision sGen = do
   ePost <- RD.getPostBuild
 
-  (eWib, eStraight, eCurves) <- RD.elAttr "form" ("class" =: "form-inline") $ liftA3 (,,)
-    (B.bsButton_ "Re-Wibble" B.Secondary)
-    (B.bsButton_ "Straight Lines" B.Secondary)
-    (B.bsButton_ "Quadratic Curves" B.Secondary)
+  (eWib, eStraight, eCurves) <- B.contained $
+    RD.elAttr "form" ("class" =: "form-inline") $ liftA3 (,,)
+      (B.bsButton_ "Re-Wibble" B.Secondary)
+      (B.bsButton_ "Straight Lines" B.Secondary)
+      (B.bsButton_ "Quadratic Curves" B.Secondary)
 
-  (dRLower, dRUpper, dRVariance) <- RD.el "form" $ liftA3 (,,)
+  (dRLower, dRUpper, dRVariance) <- B.contained $
+    RD.elAttr "form" ("class" =: "form-inline") $ liftA3 (,,)
     -- Lower bound range adjustment
-    (RD.divClass "slider" $ dRange "Lower" "lower" 0 $ \m -> m
+    (RD.divClass "slider" $ B.bsRangeInput "Lower" "lower" 0 $ \m -> m
       & at "min" ?~ "-1"
       & at "max" ?~ "0"
       & at "step" ?~ "0.01"
     )
     -- Upper bound range adjustment
-    (RD.divClass "slider" $ dRange "Upper" "upper" 0 $ \m -> m
+    (RD.divClass "slider" $ B.bsRangeInput "Upper" "upper" 0 $ \m -> m
       & at "min" ?~ "0"
       & at "max" ?~ "1"
       & at "step" ?~ "0.01"
     )
     -- Variance bound range adjustment
-    (RD.divClass "slider" $ dRange "Variance" "variance" 50 $ \m -> m
+    (RD.divClass "slider" $ B.bsRangeInput "Variance" "variance" 50 $ \m -> m
       & at "min" ?~ "0"
-      & at "max" ?~ tshow (paintingSize / 4 ::Double)
+      & at "max" ?~ tshow (paintingSize / 2.0)
       & at "step" ?~ "1"
     )
 
-  dCx <- CI.createCanvasForCx canvasAttrs
+  dCx <- B.contained $ CI.createCanvasForCx canvasAttrs
 
+  -- Maintain the function we use to draw our curves. Start with drawing curves.
   dCurveFn <- R.holdDyn quadCurves $ R.leftmost
-    [ straightLines <$ eStraight
-    , quadCurves <$ eCurves
+    [ -- When one of the line buttons are clicked, the Event produces a function.
+      straightLines <$ eStraight -- straight lines
+    , quadCurves <$ eCurves      -- curves
     ]
 
   let eBoop = ePost <> eWib

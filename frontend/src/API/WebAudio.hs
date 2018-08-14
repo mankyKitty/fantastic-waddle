@@ -2,20 +2,28 @@ module API.WebAudio
   ( checkNullOrUndefined
   , dNewAudioCtx
   , dNewAnalyser
+  , getAudioMediaStream
   ) where
 
-import           Control.Applicative         (liftA2)
-import           Reflex.Dom.Core             (DomRenderHook, Dynamic, Event,
-                                              MonadWidget)
-import qualified Reflex.Dom.Core             as RD
+import           Control.Lens                       ((.~), (^.))
 
-import qualified GHCJS.DOM.AudioContext      as AC
-import qualified GHCJS.DOM.Types             as DOM
+import           Control.Applicative                (liftA2)
 
-import           GHCJS.DOM.Types             (AnalyserNode, AudioContext, JSM,
-                                              MonadJSM, PToJSVal)
+import           Data.Function                      ((&))
+import           Data.Text                          (Text)
 
-import qualified Language.Javascript.JSaddle as JS
+import           Reflex.Dom.Core                    (DomRenderHook, Dynamic,
+                                                     Event, MonadWidget)
+import qualified Reflex.Dom.Core                    as RD
+
+import qualified GHCJS.DOM.AudioContext             as AC
+import qualified GHCJS.DOM.Types                    as DOM
+
+import           GHCJS.DOM.Types                    (AnalyserNode, AudioContext,
+                                                     JSM, MediaStream, MonadJSM,
+                                                     PToJSVal, PromiseRejected)
+import qualified Language.Javascript.JSaddle        as JS
+import           Language.Javascript.JSaddle.Object ((!), ( # ), (<#))
 
 checkNullOrUndefined
   :: ( MonadJSM m
@@ -61,3 +69,14 @@ dNewAnalyser
   -> m (Dynamic t (Maybe AnalyserNode))
 dNewAnalyser = do
   dJSObj AC.createAnalyser
+
+getAudioMediaStream
+  :: MonadJSM m
+  => m (Either PromiseRejected MediaStream)
+getAudioMediaStream = JS.liftJSM $ do
+  mediaDevices <- JS.jsg "navigator" >>= (^. JS.js "mediaDevices")
+
+  settings <- JS.obj >>= \o -> (o <# "audio") True
+
+  mediaDevices ^. JS.js1 "getUserMedia" settings >>= \p ->
+    JS.catch (DOM.readPromise p >>= fmap Right . JS.fromJSValUnchecked) (pure . Left)

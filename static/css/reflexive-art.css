@@ -1,9 +1,14 @@
 .svg-wrapper, .canvas-wrapper > canvas {
   background-color: #fffff0;
+  z-index: 1;
 }
 
 canvas.gol-canvas {
   background: black;
+}
+
+.svg-scaler {
+  width: 100%;
 }
 
 .svg-wrapper {
@@ -13,4 +18,7 @@ canvas.gol-canvas {
 
 .basic-poly {
   stroke-width: 0.2px;
+}
+
+.joy-slider {
 }

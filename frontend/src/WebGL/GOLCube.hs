@@ -1,13 +1,15 @@
+{-# LANGUAGE FlexibleContexts  #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RankNTypes        #-}
 {-# LANGUAGE RecursiveDo       #-}
+{-# LANGUAGE TypeFamilies      #-}
 module WebGL.GOLCube
   ( golCube
   ) where
 
 import           Control.Lens                        (Getting, Lens, Lens',
                                                       makeClassy, mapped, over,
-                                                      traverseOf, (+~), (.~),
+                                                      traverseOf, (+~), (.~), (-~),
                                                       (^.), (^?), _Just,
                                                       _Wrapped)
 import           Control.Monad                       ((>=>))
@@ -18,14 +20,17 @@ import           Data.Bits                           ((.|.))
 import           Data.Bool                           (bool)
 import           Data.Function                       ((&))
 import           Data.Semigroup                      ((<>))
+import           Data.Text                           (Text)
 import           System.Random                       (StdGen)
 
 import           Reflex                              (Dynamic, Event, (<@),
                                                       (<@>))
 import qualified Reflex                              as R
-import           Reflex.Dom.Core                     (MonadWidget, DomRenderHook, Widget, (=:))
+import           Reflex.Dom.Core                     (DomRenderHook,
+                                                      MonadWidget, Widget, (=:))
 import qualified Reflex.Dom.Core                     as RD
 
+import qualified Linear as L
 import           Linear.Matrix                       ((!*!))
 import qualified Linear.Matrix                       as LM
 import           Linear.V3                           (V3 (..))
@@ -37,19 +42,20 @@ import qualified Linear.Quaternion                   as Q
 import           GHCJS.DOM.Types                     (Float32Array (..),
                                                       GLboolean, GLenum, GLint,
                                                       GLintptr, GLsizei, GLuint,
-                                                      JSM, MonadJSM,
+                                                      JSM, JSString, MonadJSM,
                                                       WebGLBuffer, WebGLProgram,
                                                       WebGLRenderingContext,
                                                       WebGLTexture, liftJSM)
 import qualified GHCJS.DOM.WebGLRenderingContextBase as Gl
+
 import           Language.Javascript.JSaddle         (valToStr)
+import qualified Language.Javascript.JSaddle         as JS
 import           Reflex.Dom.CanvasBuilder.Types      (CanvasConfig (..),
                                                       CanvasInfo (..))
 import qualified Reflex.Dom.CanvasDyn                as C
 
 import qualified Styling.Bootstrap                   as B
 
-import           API.WebAudio                        as Audio
 import           Internal                            (tshow, (<$$), (<$$>))
 import           WebGL.GOL                           as GOL
 import           WebGL.Internal                      as GI
@@ -57,9 +63,11 @@ import qualified WebGL.Shaders.GOLCube               as Shaders
 import           WebGL.Statics                       (cubePositions,
                                                       flatColours, indices,
                                                       wrappedTex)
-import           WebGL.Types                         (CubeRotation (..), Error,
+import           WebGL.Types                         (CubeInfo (CubeInfo),
+                                                      CubeRotation (..), Error,
                                                       GOL (..), GOLCube (..),
-                                                      HasGOL (..), CubeInfo (CubeInfo), HasCubeInfo (..),
+                                                      HasCubeInfo (..),
+                                                      HasGOL (..),
                                                       HasGOLCube (..), liftGLM,
                                                       runWebGLM)
 
@@ -78,10 +86,11 @@ modelViewMatrix = LM.identity
 
 golCubeDraw
   :: MonadJSM m
-  => WebGLRenderingContext
+  => V3 Double
+  -> WebGLRenderingContext
   -> GOLCube
   -> m GOLCube
-golCubeDraw cx g = do
+golCubeDraw mvVec cx g = do
   drawScene
     GOL.width
     GOL.height
@@ -89,6 +98,7 @@ golCubeDraw cx g = do
     golCubeProgram
     golViewSize
     golCubeProjMatPrimary
+    mvVec
     cx g
 
 drawScene
@@ -99,10 +109,11 @@ drawScene
   -> Lens' GOLCube WebGLProgram
   -> Lens' GOL Float32Array
   -> Lens' GOLCube Float32Array
+  -> V3 Double
   -> WebGLRenderingContext
   -> GOLCube
   -> m GOLCube
-drawScene w h texL prgL sizeL projL cx g = do
+drawScene w h texL prgL sizeL projL mvVec cx g = do
   Gl.bindFramebuffer cx Gl.FRAMEBUFFER Nothing
 
   Gl.clearColor cx 0.0 0.0 0.0 1.0 -- Clear to black, fully opaque
@@ -112,7 +123,7 @@ drawScene w h texL prgL sizeL projL cx g = do
   Gl.clear cx (Gl.COLOR_BUFFER_BIT .|. Gl.DEPTH_BUFFER_BIT) -- Clear the canvas before we start drawing on it.
   let
     cubeRot = g ^. golCubeCubeRotation . _Wrapped
-    tVector = V3 (-0.0) 0.0 (-4.0)
+    tVector = mvVec + V3 (-0.0) 0.0 (-4.0)
     zRotate = Q.axisAngle (V3 0 0 1) cubeRot
     xRotate = Q.axisAngle (V3 1 0 0) (cubeRot * 0.7)
 
@@ -179,7 +190,8 @@ initCube = do
 
   dTick <- bool eStep eTick <$$> R.toggle False eToggleAnim
 
-  (canvas, _) <- RD.divClass "canvas-wrapper" $ RD.elAttr' "canvas"
+  (wrapperEl, (canvas, _)) <- RD.elAttr' "div" ("class" =: "canvas-wrapper")
+    $ RD.elAttr' "canvas"
     ( "height" =: tshow (height :: Int) <>
       "width"  =: tshow (width :: Int) <>
       "class"  =: "gol-canvas"
@@ -188,12 +200,22 @@ initCube = do
 
   dCx <- _canvasInfo_context <$$> C.dContextWebgl (CanvasConfig canvas [])
 
+  let
+    eForward  = (L._z -~ 1.0) <$ RD.keypress RD.ArrowUp wrapperEl
+    eBackward = (L._z +~ 1.0) <$ RD.keypress RD.ArrowDown wrapperEl
+    eRight    = (L._x +~ 1.0) <$ RD.keypress RD.ArrowRight wrapperEl
+    eLeft     = (L._x -~ 1.0) <$ RD.keypress RD.ArrowLeft wrapperEl
+
   pure $ CubeInfo
     dCx
     eReset
     dTick
     eToggleAnim
     ePost
+    eForward
+    eBackward
+    eRight
+    eLeft
 
 runGL'
   :: ( MonadWidget t m
@@ -213,26 +235,42 @@ golCube sGen = RD.divClass "gol-cube" $ do
   let
     dCx = cI ^. cubeInfoCx
 
+    noMove = V3 0 0 0
+
+    eMoves = [ cI ^. cubeInfoUpPress
+             , cI ^. cubeInfoDownPress
+             , cI ^. cubeInfoRightPress
+             , cI ^. cubeInfoLeftPress
+             ]
+
+  dMvVec <- R.foldDyn ($) (V3 0 0 0) $ R.mergeWith (.) eMoves
+
   (eError, eGol) <- R.fanEither <$$> RD.requestDomAction $
     R.current (createGOLCube <$> dCx) <@ (cI ^. cubeInfoPost)
 
   eInitialDraw <- RD.requestDomAction $
     (\c g -> do
         GOL.setInitialState sGen c (g ^. golCubeGOL)
-        golCubeDraw c g
+        golCubeDraw noMove c g
     )
     <$> R.current dCx
     <@> eGol
 
   let
+    dDraw = pure (\mv cx mgol -> traverse (golCubeDraw mv cx) mgol)
+
     resetGame cx = traverseOf (traverse . golCubeGOL) (GOL.setInitialState sGen cx)
-    stepAnim cx = traverse (traverseOf golCubeGOL (GOL.stepRenderCopyTexture cx) >=> golCubeDraw cx)
+    stepAnim cx = traverse (traverseOf golCubeGOL (GOL.stepRenderCopyTexture cx) >=> golCubeDraw noMove cx)
 
   rec dMGol <- R.holdDyn Nothing $ R.leftmost
         [ pure <$> eGol
         , eWasReset
         , eStepRendered
+        , eMoved
         ]
+
+      eMoved <- RD.requestDomAction $
+        R.current (dDraw <*> dMvVec <*> dCx <*> dMGol) <@ (foldMap (() <$) eMoves)
 
       eWasReset <- runGL' dCx dMGol resetGame
         $ cI ^. cubeInfoReset
@@ -240,18 +278,16 @@ golCube sGen = RD.divClass "gol-cube" $ do
       eStepRendered <- runGL' dCx dMGol stepAnim . R.switchDyn
         $ cI ^. cubeInfoTick
 
-  dStatus <- R.holdDyn "Nothing Yet" $ R.leftmost
+  dStatus <- R.holdDyn "Game Not Ready" $ R.leftmost
     [ ("Bugger: " <>) . tshow <$> eError
     , "Woot!" <$ eGol
     ]
 
-  dRendered <- R.holdDyn "Nothing Yet" $
+  dRendered <- R.holdDyn "Nothing Rendered" $
     ("Rendered!" <$ eInitialDraw) <>
     ("Stepped!"  <$ eStepRendered)
 
+  RD.display dMvVec
+
   RD.divClass "status" (RD.dynText dStatus)
   RD.divClass "rendered" (RD.dynText dRendered)
-
-
-  pure ()
-

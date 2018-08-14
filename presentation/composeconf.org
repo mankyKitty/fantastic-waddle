@@ -9,9 +9,8 @@
 
 * The Goals
  - Introduce Reflex =svg= and =canvas= libraries.
- - Demonstrate that Haskell is more than capable of art & animation.
+ - Show that Haskell is more than capable of front-end art & animation.
  - Encourage / inspire you to take the plunge!
-
 * Generative and Evolutionary Art
  - Largely autonomous
  - Often emergent
@@ -38,3 +37,30 @@ file:genEvoArt/tiledLines.png
 - Title: *Tiled Lines*
 - Image: [[https://github.com/mankyKitty/fantastic-waddle][This Presentation]] 
 - Technique: [[https://generativeartistry.com/tutorials/tiled-lines][Generative Artistry]]
+
+* Why Haskell?
+  - Types
+    - Types
+      - Functions as values
+        - Types
+          - Lens
+            - Types
+              - GHC
+                - Types
+                  - ~traverse~
+* Why Reflex?
+  - Functional Reactive Programming.
+  - Flexible and powerful technique for describing interactions over time.
+  - Not enough time to provide a /complete/ tutorial. 
+    - Check references for some links, or come ask me later!
+** The basics
+   - ~Event~ : a value at *a point* in time.
+   - ~Behaviour~ : a value at *all points* in time.
+   - ~Dynamic~ : Combination of an ~Event~ and a ~Behaviour~. 
+     - Unique to Reflex.
+** Instances & combinators
+   - ~Event~ : ~Functor~
+   - ~Behaviour~ and ~Dynamic~ : ~Functor~, ~Applicative~, ~Monad~
+   - Combinators like "~<@~" let you sample the current value of a ~Behaviour~ or ~Dynamic~ at the moment an ~Event~ fires
+   - You're able to /reliably/ express incredible amounts of functionality:
+     #+INCLUDE: "../frontend/src/SVG/Squares.hs" :LINES "293-296" src haskell

@@ -4,13 +4,21 @@
 {-# LANGUAGE OverloadedStrings          #-}
 module Canvas2D.TiledLines where
 
+import           Control.Lens                       ((^.), to, mapped)
+
+import           Text.Read                          (readMaybe)
+
 import           Data.Map                           (Map)
+
+import Debug.Trace (traceShowId)
 
 import           Data.Text                          (Text)
 import qualified Data.Text                          as Text
+import Data.Text.Lens (_Text)
 
 import           Data.Bool                          (bool)
 import           Data.Foldable                      (forM_)
+import           Data.Maybe                         (fromMaybe)
 import           Data.Semigroup                     ((<>))
 import           Data.Traversable                   (forM)
 
@@ -18,7 +26,8 @@ import           Control.Monad.IO.Class             (liftIO)
 import qualified System.Random                      as Rnd
 
 import qualified Reflex                             as R
-import           Reflex.Dom.Core                    (Widget, (<@), (=:))
+import           Reflex.Dom.Core                    (Event, Reflex, Widget,
+                                                     (<@), (=:))
 import qualified Reflex.Dom.Core                    as RD
 
 import qualified GHCJS.DOM.CanvasPath               as DOM_CP
@@ -105,15 +114,16 @@ draw x y s cap'd cx =
       LtoR -> ln x' y' (x' + s') (y' + s') "lightseagreen" 45
       RtoL -> ln (x' + s') y' x' (y' + s') "palevioletred" (-45)
 
-decSize,incSize :: Int -> Int
-incSize   = (+10)
-decSize n = if (n - 10) == 0 then n else n - 10
+decSize,incSize :: Int -> Int -> Int
+incSize s n = if (n + s) > step then n else n + s
+decSize s n = if (n - s) <= 0 then n else n - s
 
 tiledLines :: Widget x ()
 tiledLines = do
   ePost <- RD.getPostBuild
-
   let
+    defStepSize = 10
+
     drawSteps stp cap cx = do
       DOM_CR.clearRect cx 0 0 (fromIntegral size) (fromIntegral size)
       DOM_CR.beginPath cx
@@ -124,6 +134,12 @@ tiledLines = do
 
       DOM_CR.stroke cx
 
+  dStepSize <- RD._textInput_value
+    <$> B.bsNumberInput "Step Size" "step-size" defStepSize
+
+  let
+    toEStepSize e = R.fmapMaybe (readMaybe . Text.unpack) $ R.current dStepSize <@ e
+
   (dStep, dCap, eStep) <- B.contained $ do
     eInc <- B.bsButton_ "+ Step" B.Primary
     eDec <- B.bsButton_ "- Step" B.Primary
@@ -132,8 +148,8 @@ tiledLines = do
     dCapped <- bool NoCap Cap <$$> RD.toggle False eCap
 
     dStep <- R.foldDyn ($) step $ R.mergeWith (.)
-      [ incSize <$ eInc
-      , decSize <$ eDec
+      [ incSize <$> toEStepSize eInc
+      , decSize <$> toEStepSize eDec 
       ]
 
     pure (dStep, dCapped, eInc <> eDec)
@@ -142,12 +158,8 @@ tiledLines = do
     RD.dynText $ ("Step: " <>) . tshow <$> dStep
     CI.createCanvasForCx canvasAttrs
 
-  _ <- RD.requestDomAction $ R.current (
-    drawSteps
-      <$> dStep
-      <*> dCap
-      <*> dCx
-    )
+  _ <- RD.requestDomAction
+    $ R.current (drawSteps <$> dStep <*> dCap <*> dCx)
     <@ ( ePost <> eStep )
 
   pure ()

@@ -29,30 +29,25 @@ import qualified Styling.Bootstrap    as B
 
 import           Static
 
-widg
-  :: MonadWidget t m
-  => m ()
-  -> Text
-  -> m (Event t (m ()))
-widg w txt =
-  w <$$ B.bsButton_ txt B.Primary
+widgetActivate :: MonadWidget t m => m () -> Text -> m (Event t (m ()))
+widgetActivate w txt = w <$$ B.bsButton_ txt B.Primary
 
 body :: StdGen -> Widget x ()
 body sGen = do
   divClass "container" $
     divClass "row" $ do
     eWidgs <- divClass "col-2" $ sequenceA
-      [ widg (squares sGen) "Squares"
-      , widg tiledLines "Tiled Lines"
-      , widg (joyDivision sGen) "Joy Division"
-      , widg (gol sGen) "Game Of Life"
-      , widg (golCube sGen) "Game Of Life (Spicy!)"
+      [ widgetActivate (squares sGen) "Squares"
+      , widgetActivate tiledLines "Tiled Lines"
+      , widgetActivate (joyDivision sGen) "Joy Division"
+      , widgetActivate (gol sGen) "Game Of Life"
+      , widgetActivate (golCube sGen) "Game Of Life (Spicy!)"
       ]
 
     _ <-
       divClass "col-10"
       . divClass "container"
-        . divClass "row" $ widgetHold (squares sGen) (leftmost eWidgs)
+        . divClass "row" $ widgetHold tiledLines (leftmost eWidgs)
     blank
   blank
 
@@ -61,7 +56,7 @@ cssLink ss = elAttr "link" ("rel" =: "stylesheet" <> "href" =: ss) blank
 headStatic :: StaticWidget x ()
 headStatic = do
   cssLink (static @"css/reflexive-art.css")
-  cssLink "css/bootstrap.min.css"
+  cssLink (static @"css/bootstrap.min.css")
   el "title" $ text "Oh my"
 
 frontend :: StdGen -> (StaticWidget x (), Widget x ())

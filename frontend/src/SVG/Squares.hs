@@ -6,10 +6,10 @@ module SVG.Squares
   ( squares
   ) where
 
-import           Control.Applicative                  (liftA2)
-import           Control.Lens                         (at, mapped, over, to, (.~),
+import           Control.Applicative                  (liftA2, liftA3)
+import           Control.Lens                         (at, mapped, over, to,
                                                        views, ( # ), (%~), (+~),
-                                                       (?~), (^.), _1, _2,
+                                                       (.~), (?~), (^.), _1, _2,
                                                        _Wrapped)
 
 import           Control.Monad                        (join, replicateM, void)
@@ -20,7 +20,7 @@ import           Control.Monad.Random                 (MonadRandom, Random,
                                                        RandomGen, StdGen)
 import qualified Control.Monad.Random                 as Rnd
 
-import Data.Function ((&))
+import           Data.Function                        ((&))
 import           Data.Semigroup                       (sconcat, (<>))
 
 import           Data.Bifunctor                       (first)
@@ -37,7 +37,7 @@ import qualified Numeric.Noise.Perlin                 as Perlin
 
 import           Reflex.Dom.Core                      (Dynamic, Event,
                                                        MonadHold, Reflex,
-                                                       Widget, (=:), (<@))
+                                                       Widget, (<@), (=:))
 import qualified Reflex.Dom.Core                      as RD
 
 import qualified Reflex.Dom.Widget.SVG                as SVG
@@ -48,7 +48,7 @@ import           Reflex.Dom.Widget.SVG.Types          (Height, Pos,
 import qualified Reflex.Dom.Widget.SVG.Types          as SVGT
 import qualified Reflex.Dom.Widget.SVG.Types.SVG_Path as P
 
-import           Internal                             (tshow, (<$$))
+import           Internal                             (tshow, (<$$), (<$$>))
 import qualified Styling.Bootstrap                    as B
 
 import           SVG.Types                            (Colour (..), Count (..),
@@ -240,19 +240,20 @@ svgEl :: SVGT.SVG_El
 svgEl = SVGT.SVG_El wwidth wheight Nothing
 
 decSqCount, incSqCount :: Count -> Count
-decSqCount (Count 1)   = (Count 1)
-decSqCount (Count n)   = (Count (n - 100))
+decSqCount (Count 1) = (Count 1)
+decSqCount (Count n) = (Count (n - 50))
 
 incSqCount (Count 600) = (Count 600)
-incSqCount (Count n)   = (Count (n + 100))
+incSqCount (Count n)   = (Count (n + 50))
 
 squares :: StdGen -> Widget x ()
 squares sGen = do
-  eTickInfo <- () <$$ RD.tickLossyFromPostBuildTime 0.016
+  eTickInfo <- () <$$ RD.tickLossyFromPostBuildTime 0.1
 
-  eGenerate <- B.bsButton_ "New Squares" B.Secondary
-  eOnButton <- B.bsButton_ "Manual" B.Secondary
-  eOnTick   <- B.bsButton_ "Auto" B.Secondary
+  (eGenerate, eOnButton, eOnTick) <- liftA3 (,,)
+    (B.bsButton_ "New Squares" B.Secondary)
+    (B.bsButton_ "Manual" B.Secondary)
+    (B.bsButton_ "Auto" B.Secondary)
 
   eFoof <- RD.switchHold RD.never $ RD.leftmost
     [ eGenerate <$ eOnButton
@@ -278,28 +279,26 @@ squares sGen = do
     genPolys sqC sG = generatePolys
       wrld size sqPadding sqC sG
 
-  -- rec (dSqCount, eSqCountChg) <- B.contained $ do
-  --       eIncSq <- B.bsButton_ "+ Sqr" B.Info
-  --       _ <- RD.dynText $ mappend "Square Count: " . tshow . unCount <$> dSqCount
-  --       eDecSq <- B.bsButton_ "- Sqr" B.Info
+  rec (dSqCount, eSqCountChg) <- RD.divClass "sqr-inc-dec" $ do
+        eIncSq <- B.bsButton_ "+ Sqr" B.Info
+        _ <- RD.dynText $ mappend "Square Count: " . tshow . unCount <$> dSqCount
+        eDecSq <- B.bsButton_ "- Sqr" B.Info
 
-  --       dSqrs <- RD.foldDyn ($) sqCount $ RD.mergeWith (.)
-  --         [ incSqCount <$ eIncSq
-  --         , decSqCount <$ eDecSq
-  --         ]
+        dSqrs <- RD.foldDyn ($) sqCount $ RD.mergeWith (.)
+          [ incSqCount <$ eIncSq
+          , decSqCount <$ eDecSq
+          ]
 
-  --       pure (dSqrs, eIncSq <> eDecSq)
+        pure (dSqrs, eIncSq <> eDecSq)
 
-  rec (dPolys, dGen) <- RD.splitDynPure <$> RD.holdDyn (genPolys sqCount sGen)
-        (RD.current (genPolys <$> pure sqCount <*> dGen) <@ eGenerate)
+  rec (dPolys, dGen) <- fmap RD.splitDynPure . RD.holdDyn (genPolys sqCount sGen) $
+        RD.current (genPolys <$> dSqCount <*> dGen) <@ (eGenerate <> eSqCountChg)
 
-  dRandInt <- fmap fst <$> dRandomRange sGen (2,3) (const id) eGenerate
-
+  dRandInt <- fst <$$> dRandomRange sGen (2,3) (const id) eGenerate
 
   dScaleInp <- RD.divClass "scale-slider" $ do
     RD.text "Scale"
-    fmap (fmap realToFrac . (^. RD.rangeInput_value)) . RD.rangeInput $ RD.def
-      & RD.rangeInputConfig_initialValue .~ 0.05
+    fmap (fmap realToFrac . (^. RD.rangeInput_value)) . RD.rangeInput $ B.rangeInpConf 0.0 "scale"
       & RD.rangeInputConfig_attributes . mapped %~ \m -> m
           & at "step" ?~ "0.0001"
           & at "min" ?~ "0.0"
@@ -315,7 +314,8 @@ squares sGen = do
       <$> dRandInt
       <*> join dFoofen
 
-  void . SVG.svgElDynAttr' SVG.SVG_Root dSvgRootAttrs $
-    RD.simpleList (NE.toList <$> dPolys) (\dPoly ->
-      SVG.svgBasicDyn_ SVG.Polygon makePolyProps (dPerlin <*> dPoly)
-    )
+  void . RD.elAttr "div" ("class" =: "svg-scaler") . B.contained
+    . SVG.svgElDynAttr' SVG.SVG_Root dSvgRootAttrs $
+      RD.simpleList (NE.toList <$> dPolys) (\dPoly ->
+        SVG.svgBasicDyn_ SVG.Polygon makePolyProps (dPerlin <*> dPoly)
+                                           )

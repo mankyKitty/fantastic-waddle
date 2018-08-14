@@ -34,7 +34,8 @@ library
 
                  , Internal
 
-                 , API.WebAudio
+                 -- Not ready
+                 -- , API.WebAudio
 
                  , SVG.Types
                  , SVG.Squares
