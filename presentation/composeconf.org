@@ -68,7 +68,7 @@ file:genEvoArt/tiledLines.png
    - Draw a line of predetermined length
    - Decide to turn 90degrees left or right
    - Draw a line of predetermined length
-   - Repeat (predetermined size - 1)^2 times
+   - Repeat ${(size/step)^2}$ times
 ** Deja this one
 #+ATTR_HTML: :width 40% :height 40%
 file:genEvoArt/tiledLines.png
@@ -85,7 +85,20 @@ file:genEvoArt/tiledLines.png
   #+END_SRC
   - More modern functional variant
    #+INCLUDE: "../frontend/src/Canvas2D/TiledLines.hs" :LINES "129-133" src haskell
-** Trivial Triggering
+** Bump step
+   #+INCLUDE: "../frontend/src/Canvas2D/TiledLines.hs" :LINES "145-147" src haskell
+** Step state  
+   #+BEGIN_SRC haskell
+foldDyn :: (... t, ... m) => (a -> b -> b) -> b -> Event t a -> m (Dynamic t b)
+   #+END_SRC
+   #+INCLUDE: "../frontend/src/Canvas2D/TiledLines.hs" :LINES "141-143" src haskell
+   #+INCLUDE: "../frontend/src/Canvas2D/TiledLines.hs" :LINES "151-155" src haskell
+** Fingers on the screen
+   #+BEGIN_SRC haskell
+requestDomAction :: ( DomRenderHook t m ) => RD.Event () (JSM ()) -> m (RD.Event () ())
+   #+END_SRC
+   #+INCLUDE: "../frontend/src/Canvas2D/TiledLines.hs" :LINES "162-169" src haskell
+
 * Joy Division
 ** Convenient choices
    - Factor out common elements easily
@@ -99,4 +112,5 @@ file:genEvoArt/tiledLines.png
 * Game of Life
 ** Nothing up my sleeves
 ** Orchestration
+** Hocking photons   
 * Are we 3D yet?

@@ -138,8 +138,8 @@ tiledLines _ = do
     <$> B.bsNumberInput "Step Size" "step-size" defStepSize
 
   let
-    eStepSize eTrigger = R.fmapMaybe (readMaybe . Text.unpack) $
-      R.current dStepSize <@ eTrigger
+    eStepSize eTrigger =
+      R.fmapMaybe (readMaybe . Text.unpack) $ R.current dStepSize <@ eTrigger
 
   (dStep, dWeird, eStep) <- B.contained $ do
     eInc <- B.bsButton_ "+ Step" B.Primary
@@ -159,8 +159,12 @@ tiledLines _ = do
     RD.dynText $ ("Step: " <>) . tshow <$> dStep
     CI.createCanvasForCx canvasAttrs
 
-  _ <- RD.requestDomAction
-    $ R.current (drawSteps <$> dStep <*> dWeird <*> dCx)
+  _ <- RD.requestDomAction $
+    R.current ( drawSteps
+                <$> dStep
+                <*> dWeird
+                <*> dCx
+              )
     <@ ( ePost <> eStep )
 
   pure ()
