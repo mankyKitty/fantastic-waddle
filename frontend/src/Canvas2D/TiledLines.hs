@@ -4,50 +4,43 @@
 {-# LANGUAGE OverloadedStrings          #-}
 module Canvas2D.TiledLines where
 
-import           Control.Lens                       ((^.), to, mapped)
+import           Control.Lens                       (over, _1)
+import           GHC.Word                           (Word8)
 
 import           Text.Read                          (readMaybe)
 
 import           Data.Map                           (Map)
 
-import Debug.Trace (traceShowId)
-
 import           Data.Text                          (Text)
 import qualified Data.Text                          as Text
-import Data.Text.Lens (_Text)
 
 import           Data.Bool                          (bool)
 import           Data.Foldable                      (forM_)
-import           Data.Maybe                         (fromMaybe)
 import           Data.Semigroup                     ((<>))
-import           Data.Traversable                   (forM)
 
-import           Control.Monad.IO.Class             (liftIO)
+import           Control.Monad.IO.Class             (MonadIO, liftIO)
+import qualified Control.Monad.Random               as MRnd
+import           System.Random                      (StdGen)
 import qualified System.Random                      as Rnd
 
 import qualified Reflex                             as R
-import           Reflex.Dom.Core                    (Event, Reflex, Widget,
-                                                     (<@), (=:))
+import           Reflex.Dom.Core                    (Widget, (<@), (=:))
 import qualified Reflex.Dom.Core                    as RD
 
 import qualified GHCJS.DOM.CanvasPath               as DOM_CP
-import           GHCJS.DOM.Enums                    (CanvasWindingRule (..))
-import           GHCJS.DOM.Types                    (JSString, MonadJSM,
-                                                     liftJSM)
+import           GHCJS.DOM.Types                    (MonadJSM, liftJSM)
 
 import           GHCJS.DOM.CanvasRenderingContext2D (CanvasRenderingContext2D)
 import qualified GHCJS.DOM.CanvasRenderingContext2D as DOM_CR
-
-import qualified Reflex.Dom.CanvasDyn               as C
 
 import           Internal                           (tshow, (<$$>))
 
 import qualified Canvas2D.Internal                  as CI
 import qualified Styling.Bootstrap                  as B
 
-data Capped
-  = Cap
-  | NoCap
+data Weird
+  = Weird
+  | NoWeird
   deriving (Show, Eq)
 
 newtype Wid = Width { unWid :: Int }
@@ -56,7 +49,9 @@ newtype Wid = Width { unWid :: Int }
 newtype Hei = Height { unHei :: Int }
   deriving (Show, Eq, Num)
 
-data LR = LtoR | RtoL
+data LR
+  = LeftToRight
+  | RightToLeft
   deriving (Show, Eq)
 
 size :: Int
@@ -76,60 +71,65 @@ canvasAttrs =
   "width" =: (tshow . unWid $ cWid) <>
   "height" =: (tshow . unHei $ cHei)
 
-ltor :: MonadJSM m => m LR
-ltor = bool RtoL LtoR . (>= (0.5::Double)) <$> liftIO Rnd.randomIO
+ltor1 :: IO LR
+ltor1 = MRnd.uniform [RightToLeft, LeftToRight]
+
+ltor2 :: Rnd.StdGen -> (LR, Rnd.StdGen)
+ltor2 = over _1 (bool RightToLeft LeftToRight . (>= 0.5))
+  . Rnd.randomR (0::Double,1.0)
+
+ltor3 :: MonadIO m => m LR
+ltor3 = bool RightToLeft LeftToRight . (>= (0.5::Double))
+  <$> liftIO (Rnd.randomRIO (0::Double,1.0))
 
 draw
   :: MonadJSM m
   => Int
   -> Int
   -> Int
-  -> Capped
+  -> Weird
   -> CanvasRenderingContext2D
   -> m ()
-draw x y s cap'd cx =
+draw x y s weird'd cx =
   let
     x' = fromIntegral x
     y' = fromIntegral y
 
     s' = fromIntegral s
 
-    ln a b c d col r = do
+    ln a b c d r = do
       DOM_CP.moveTo cx a b
-      DOM_CP.lineTo cx c d
 
-      if Cap == cap'd then do
-        DOM_CR.setFillStyle cx (col :: JSString)
-        DOM_CP.ellipse cx (realToFrac c) (realToFrac d)
-          (realToFrac (s' * 0.5))
-          (realToFrac (s' * 0.2))
-          (r * pi/180)
-          0
-          (2 * pi)
-          False
-        DOM_CR.fill cx (Just CanvasWindingRuleNonzero)
-        else pure ()
+      if Weird == weird'd then do
+        let xc = (a + c + s' * r) / 2
+            yc = (b + d + s' * r) / 2
 
-  in liftJSM $ ltor >>= \case
-      LtoR -> ln x' y' (x' + s') (y' + s') "lightseagreen" 45
-      RtoL -> ln (x' + s') y' x' (y' + s') "palevioletred" (-45)
+        DOM_CP.quadraticCurveTo cx c d xc yc
+        else DOM_CP.lineTo cx c d
+
+  in liftJSM $ liftIO ltor1 >>= \case
+      LeftToRight -> ln x' y' (x' + s') (y' + s') 1
+      RightToLeft -> ln (x' + s') y' x' (y' + s') (-1)
 
 decSize,incSize :: Int -> Int -> Int
 incSize s n = if (n + s) > step then n else n + s
 decSize s n = if (n - s) <= 0 then n else n - s
 
-tiledLines :: Widget x ()
-tiledLines = do
+tiledLines :: StdGen -> Widget x ()
+tiledLines _ = do
   ePost <- RD.getPostBuild
   let
+    defStepSize :: Word8
     defStepSize = 10
 
     drawSteps stp cap cx = do
       DOM_CR.clearRect cx 0 0 (fromIntegral size) (fromIntegral size)
       DOM_CR.beginPath cx
 
-      forM_ [0,stp .. size] $ \x ->
-        forM  [0,stp .. size] $ \y ->
+      let xy = [0,stp .. size]
+
+      forM_ xy $ \x ->
+        forM_ xy $ \y ->
           draw x y stp cap cx
 
       DOM_CR.stroke cx
@@ -141,26 +141,26 @@ tiledLines = do
     eStepSize eTrigger = R.fmapMaybe (readMaybe . Text.unpack) $
       R.current dStepSize <@ eTrigger
 
-  (dStep, dCap, eStep) <- B.contained $ do
+  (dStep, dWeird, eStep) <- B.contained $ do
     eInc <- B.bsButton_ "+ Step" B.Primary
     eDec <- B.bsButton_ "- Step" B.Primary
-    eCap <- B.bsButton_ "Toggle Ellipses" B.Secondary
+    eWeird <- B.bsButton_ "Toggle Weird" B.Secondary
 
-    dCapped <- bool NoCap Cap <$$> RD.toggle False eCap
+    dWeird' <- bool NoWeird Weird <$$> RD.toggle False eWeird
 
     dStep <- R.foldDyn ($) step $ R.mergeWith (.)
       [ incSize <$> eStepSize eInc
       , decSize <$> eStepSize eDec
       ]
 
-    pure (dStep, dCapped, eInc <> eDec)
+    pure (dStep, dWeird', eInc <> eDec <> eWeird)
 
   dCx <- B.contained $ do
     RD.dynText $ ("Step: " <>) . tshow <$> dStep
     CI.createCanvasForCx canvasAttrs
 
   _ <- RD.requestDomAction
-    $ R.current (drawSteps <$> dStep <*> dCap <*> dCx)
+    $ R.current (drawSteps <$> dStep <*> dWeird <*> dCx)
     <@ ( ePost <> eStep )
 
   pure ()

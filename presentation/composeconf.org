@@ -16,26 +16,26 @@
  - Often emergent
  - Yet another fascinating rabbit hole
 
-** 
+**
 #+DOWNLOADED: http://www.complexification.net/gallery/machines/substrate/substrate0014.jpg @ 2018-08-08 11:46:12
 [[file:genEvoArt/substrate0014_2018-08-08_11-46-12.jpg]]
 
 - Title: *Substrate*
-- Source: [[http://www.complexification.net/gallery/machines/substrate/index.php][Complexification]] 
+- Source: [[http://www.complexification.net/gallery/machines/substrate/index.php][Complexification]]
 
-** 
+**
 #+DOWNLOADED: http://www.entagma.com/wp-content/uploads/2016/09/hairball_mantra_10_1.jpg @ 2018-08-08 11:55:33
 [[file:genEvoArt/hairball_mantra_10_1_2018-08-08_11-55-33.jpg]]
 
 - Title: *Coloured Trails (Point Advection & Rendering)*
 - Source: [[http://www.entagma.com/colored-trails-point-advection-rendering/][Entagma]]
 
-** 
+**
 #+ATTR_HTML: :width 40% :height 40%
 file:genEvoArt/tiledLines.png
 
 - Title: *Tiled Lines*
-- Image: [[https://github.com/mankyKitty/fantastic-waddle][This Presentation]] 
+- Image: [[https://github.com/mankyKitty/fantastic-waddle][This Presentation]]
 - Technique: [[https://generativeartistry.com/tutorials/tiled-lines][Generative Artistry]]
 
 * Why Haskell?
@@ -51,15 +51,52 @@ file:genEvoArt/tiledLines.png
 * Why Reflex?
   - Functional Reactive Programming.
   - Flexible and powerful technique for describing interactions over time.
-  - Not enough time to provide a /complete/ tutorial. 
+  - Not enough time to provide a /complete/ tutorial.
     - Check references for some links, or come ask me later!
 ** The basics
    - ~Event~ : a value at *a point* in time.
    - ~Behaviour~ : a value at *all points* in time.
-   - ~Dynamic~ : Combination of an ~Event~ and a ~Behaviour~. 
+   - ~Dynamic~ : Combination of an ~Event~ and a ~Behaviour~.
      - Unique to Reflex.
 ** Instances & combinators
    - ~Event~ : ~Functor~
    - ~Behaviour~ and ~Dynamic~ : ~Functor~, ~Applicative~, ~Monad~
    - Things can become a little... terse.
      #+INCLUDE: "../frontend/src/SVG/Squares.hs" :LINES "288-290" src haskell
+* Tiled Lines
+** Basic Idea
+   - Draw a line of predetermined length
+   - Decide to turn 90degrees left or right
+   - Draw a line of predetermined length
+   - Repeat (predetermined size - 1)^2 times
+** Deja this one
+#+ATTR_HTML: :width 40% :height 40%
+file:genEvoArt/tiledLines.png
+** Random Have I ? Can
+   #+INCLUDE: "../frontend/src/Canvas2D/TiledLines.hs" :LINES "52-56" src haskell
+   #+INCLUDE: "../frontend/src/Canvas2D/TiledLines.hs" :LINES "74-84" src haskell
+** Glorious Loops
+   - Ancient '~for~' runes, circa 3050BC
+  #+BEGIN_SRC javascript
+    for (var x = 0; x < size; x += step) {
+      for (var y = 0; y < size; y += step) {
+      }
+    }
+  #+END_SRC
+  - More modern functional variant
+   #+INCLUDE: "../frontend/src/Canvas2D/TiledLines.hs" :LINES "129-133" src haskell
+** Trivial Triggering
+* Joy Division
+** Convenient choices
+   - Factor out common elements easily
+   #+INCLUDE: "../frontend/src/Styling/Bootstrap.hs" :LINES "73-77" src haskell
+   - Holy code reuse!
+   #+INCLUDE: "../frontend/src/Canvas2D/JoyDivision.hs" :LINES "185-186" src haskell
+   #+INCLUDE: "../frontend/src/Canvas2D/JoyDivision.hs" :LINES "191-192" src haskell
+   #+INCLUDE: "../frontend/src/Canvas2D/JoyDivision.hs" :LINES "197-198" src haskell
+** Combining Inputs
+   #+INCLUDE: "../frontend/src/Canvas2D/JoyDivision.hs" :LINES "218-224" src haskell
+* Game of Life
+** Nothing up my sleeves
+** Orchestration
+* Are we 3D yet?

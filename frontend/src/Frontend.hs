@@ -38,7 +38,7 @@ body sGen = do
     divClass "row" $ do
     eWidgs <- divClass "col-2" $ sequenceA
       [ widgetActivate (squares sGen) "Squares"
-      , widgetActivate tiledLines "Tiled Lines"
+      , widgetActivate (tiledLines sGen) "Tiled Lines"
       , widgetActivate (joyDivision sGen) "Joy Division"
       , widgetActivate (gol sGen) "Game Of Life"
       , widgetActivate (golCube sGen) "Game Of Life (Spicy!)"
@@ -47,7 +47,7 @@ body sGen = do
     _ <-
       divClass "col-10"
       . divClass "container"
-        . divClass "row" $ widgetHold tiledLines (leftmost eWidgs)
+        . divClass "row" $ widgetHold (tiledLines sGen) (leftmost eWidgs)
     blank
   blank
 
