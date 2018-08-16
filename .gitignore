@@ -1,4 +1,6 @@
 dist-newstyle
+dist
+dist/*
 result
 result-android
 result-ios

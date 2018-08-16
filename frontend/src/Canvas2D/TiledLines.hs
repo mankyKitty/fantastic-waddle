@@ -138,7 +138,8 @@ tiledLines = do
     <$> B.bsNumberInput "Step Size" "step-size" defStepSize
 
   let
-    toEStepSize e = R.fmapMaybe (readMaybe . Text.unpack) $ R.current dStepSize <@ e
+    eStepSize eTrigger = R.fmapMaybe (readMaybe . Text.unpack) $
+      R.current dStepSize <@ eTrigger
 
   (dStep, dCap, eStep) <- B.contained $ do
     eInc <- B.bsButton_ "+ Step" B.Primary
@@ -148,8 +149,8 @@ tiledLines = do
     dCapped <- bool NoCap Cap <$$> RD.toggle False eCap
 
     dStep <- R.foldDyn ($) step $ R.mergeWith (.)
-      [ incSize <$> toEStepSize eInc
-      , decSize <$> toEStepSize eDec 
+      [ incSize <$> eStepSize eInc
+      , decSize <$> eStepSize eDec
       ]
 
     pure (dStep, dCapped, eInc <> eDec)

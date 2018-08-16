@@ -21,8 +21,8 @@ let
     mkdir -p $out/css
 
     ln -s ${staticAssets}/css/* $out/css/
-    ln -s ${bootstrap4.out}/css/bootstrap.min.css $out/css/bootstrap.min.css
-    ln -s ${bootstrap4.out}/css/bootstrap.min.css.map $out/css/bootstrap.min.css.map
+    ln -sf ${bootstrap4.out}/css/bootstrap.min.css $out/css/bootstrap.min.css
+    ln -sf ${bootstrap4.out}/css/bootstrap.min.css.map $out/css/bootstrap.min.css.map
 
     mkdir -p $out/js
     ln -s ${minFe}/all.js $out/js/all.min.js

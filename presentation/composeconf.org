@@ -61,6 +61,5 @@ file:genEvoArt/tiledLines.png
 ** Instances & combinators
    - ~Event~ : ~Functor~
    - ~Behaviour~ and ~Dynamic~ : ~Functor~, ~Applicative~, ~Monad~
-   - Combinators like "~<@~" let you sample the current value of a ~Behaviour~ or ~Dynamic~ at the moment an ~Event~ fires
-   - You're able to /reliably/ express incredible amounts of functionality:
-     #+INCLUDE: "../frontend/src/SVG/Squares.hs" :LINES "293-296" src haskell
+   - Things can become a little... terse.
+     #+INCLUDE: "../frontend/src/SVG/Squares.hs" :LINES "288-290" src haskell

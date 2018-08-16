@@ -6,58 +6,52 @@ module SVG.Squares
   ( squares
   ) where
 
-import           Control.Applicative                  (liftA2, liftA3)
-import           Control.Lens                         (at, mapped, over, to,
-                                                       views, ( # ), (%~), (+~),
-                                                       (.~), (?~), (^.), _1, _2,
-                                                       _Wrapped)
+import           Control.Applicative         (liftA2, liftA3)
+import           Control.Lens                (at, mapped, over, to, views,
+                                              ( # ), (%~), (+~), (?~), (^.), _1,
+                                              _2, _Wrapped)
 
-import           Control.Monad                        (join, replicateM, void)
-import           Control.Monad.Fix                    (MonadFix)
-import           Control.Monad.Reader                 (MonadReader, runReaderT)
+import           Control.Monad               (join, replicateM, void)
+import           Control.Monad.Fix           (MonadFix)
+import           Control.Monad.Reader        (MonadReader, runReaderT)
 
-import           Control.Monad.Random                 (MonadRandom, Random,
-                                                       RandomGen, StdGen)
-import qualified Control.Monad.Random                 as Rnd
+import           Control.Monad.Random        (MonadRandom, Random, RandomGen,
+                                              StdGen)
+import qualified Control.Monad.Random        as Rnd
 
-import           Data.Function                        ((&))
-import           Data.Semigroup                       (sconcat, (<>))
+import           Data.Function               ((&))
+import           Data.Semigroup              ((<>))
 
-import           Data.Bifunctor                       (first)
+import           Data.Bifunctor              (first)
 
-import           Data.Map                             (Map)
+import           Data.Map                    (Map)
 
-import           Data.Text                            (Text)
+import           Data.Text                   (Text)
 
-import           Data.List.NonEmpty                   (NonEmpty ((:|)))
-import qualified Data.List.NonEmpty                   as NE
+import           Data.List.NonEmpty          (NonEmpty ((:|)))
+import qualified Data.List.NonEmpty          as NE
 
-import           Numeric.Noise                        (Seed)
-import qualified Numeric.Noise.Perlin                 as Perlin
+import           Numeric.Noise               (Seed)
+import qualified Numeric.Noise.Perlin        as Perlin
 
-import           Reflex.Dom.Core                      (Dynamic, Event,
-                                                       MonadHold, Reflex,
-                                                       Widget, (<@), (=:))
-import qualified Reflex.Dom.Core                      as RD
+import           Reflex.Dom.Core             (Dynamic, Event, MonadHold, Reflex,
+                                              Widget, (<@), (=:))
+import qualified Reflex.Dom.Core             as RD
 
-import qualified Reflex.Dom.Widget.SVG                as SVG
-import           Reflex.Dom.Widget.SVG.Types          (Height, Pos,
-                                                       SVG_Path (..),
-                                                       SVG_Polygon (..), Width,
-                                                       X, Y, _PosX, _PosY)
-import qualified Reflex.Dom.Widget.SVG.Types          as SVGT
-import qualified Reflex.Dom.Widget.SVG.Types.SVG_Path as P
+import qualified Reflex.Dom.Widget.SVG       as SVG
+import           Reflex.Dom.Widget.SVG.Types (Pos, SVG_Polygon (..), X, Y,
+                                              _PosX, _PosY)
+import qualified Reflex.Dom.Widget.SVG.Types as SVGT
+-- import qualified Reflex.Dom.Widget.SVG.Types.SVG_Path as P
 
-import           Internal                             (tshow, (<$$), (<$$>))
-import qualified Styling.Bootstrap                    as B
+import           Internal                    (tshow, (<$$), (<$$>))
+import qualified Styling.Bootstrap           as B
 
-import           SVG.Types                            (Colour (..), Count (..),
-                                                       HasWorld (..),
-                                                       Padding (..), Poly (..),
-                                                       PolyAttrs (..),
-                                                       Size (..),
-                                                       StrokeFill (..),
-                                                       World (..), toCssColour)
+import           SVG.Types                   (Colour (..), Count (..),
+                                              HasWorld (..), Padding (..),
+                                              Poly (..), PolyAttrs (..),
+                                              Size (..), StrokeFill (..),
+                                              World (..), toCssColour)
 
 createPositions
   :: Size
@@ -71,21 +65,21 @@ createPositions (realToFrac . unSize -> sz) x y =
   , _PosY # (sz + y * 2)
   )
 
-makeSquarePath
-  :: Size
-  -> Float
-  -> Float
-  -> SVG_Path
-makeSquarePath sz x y =
-  let
-    (sX,sY,sPlusX,sPlusY) = createPositions sz x y
-  in
-    D $ P._M sX sY :|
-    [ P._L sPlusX sY            -- a > b
-    , P._L sPlusX sPlusY        -- b > c
-    , P._L sX sPlusY            -- c > d
-    , P._L sX sY                -- d > a
-    ]
+-- makeSquarePath
+--   :: Size
+--   -> Float
+--   -> Float
+--   -> SVG_Path
+-- makeSquarePath sz x y =
+--   let
+--     (sX,sY,sPlusX,sPlusY) = createPositions sz x y
+--   in
+--     D $ P._M sX sY :|
+--     [ P._L sPlusX sY            -- a > b
+--     , P._L sPlusX sPlusY        -- b > c
+--     , P._L sX sPlusY            -- c > d
+--     , P._L sX sY                -- d > a
+--     ]
 
 createShape
   :: ( MonadRandom m
@@ -113,17 +107,17 @@ createShape _sz pad n f = do
 
   fmap NE.nub . (:|) <$> mk <*> replicateM (unCount n) mk
 
-createPath
-  :: ( MonadRandom m
-     , MonadReader r m
-     , HasWorld r
-     )
-  => Size
-  -> Padding
-  -> Count
-  -> m SVG_Path
-createPath sz pad n =
-  sconcat <$> createShape sz pad n (makeSquarePath sz)
+-- createPath
+--   :: ( MonadRandom m
+--      , MonadReader r m
+--      , HasWorld r
+--      )
+--   => Size
+--   -> Padding
+--   -> Count
+--   -> m SVG_Path
+-- createPath sz pad n =
+--   sconcat <$> createShape sz pad n (makeSquarePath sz)
 
 createPolygons
   :: ( MonadRandom m
@@ -240,11 +234,11 @@ svgEl :: SVGT.SVG_El
 svgEl = SVGT.SVG_El wwidth wheight Nothing
 
 decSqCount, incSqCount :: Count -> Count
-decSqCount (Count 1) = (Count 1)
-decSqCount (Count n) = (Count (n - 50))
+decSqCount (Count 1) = Count 1
+decSqCount (Count n) = Count (n - 50)
 
-incSqCount (Count 600) = (Count 600)
-incSqCount (Count n)   = (Count (n + 50))
+incSqCount (Count 600) = Count 600
+incSqCount (Count n)   = Count (n + 50)
 
 squares :: StdGen -> Widget x ()
 squares sGen = do
@@ -269,15 +263,15 @@ squares sGen = do
 
   let
     sqPadding = Padding 3
-    sqCount   = Count 600
+    sqCount   = Count 100
     wrld      = World wheight wwidth
     size      = Size 1.5
 
     dSvgRootAttrs = pure $
       bgProps <> SVGT.makeSVGProps svgEl
 
-    genPolys sqC sG = generatePolys
-      wrld size sqPadding sqC sG
+    genPolys = generatePolys
+      wrld size sqPadding
 
   rec (dSqCount, eSqCountChg) <- RD.divClass "sqr-inc-dec" $ do
         eIncSq <- B.bsButton_ "+ Sqr" B.Info
@@ -298,7 +292,7 @@ squares sGen = do
 
   dScaleInp <- RD.divClass "scale-slider" $ do
     RD.text "Scale"
-    fmap (fmap realToFrac . (^. RD.rangeInput_value)) . RD.rangeInput $ B.rangeInpConf 0.0 "scale"
+    fmap (fmap realToFrac . RD._rangeInput_value) . RD.rangeInput $ B.rangeInpConf 0.0 "scale"
       & RD.rangeInputConfig_attributes . mapped %~ \m -> m
           & at "step" ?~ "0.0001"
           & at "min" ?~ "0.0"
@@ -310,9 +304,7 @@ squares sGen = do
     ]
 
   let
-    dPerlin = addPerlinNoiseToPoly
-      <$> dRandInt
-      <*> join dFoofen
+    dPerlin = addPerlinNoiseToPoly <$> dRandInt <*> join dFoofen
 
   void . RD.elAttr "div" ("class" =: "svg-scaler") . B.contained
     . SVG.svgElDynAttr' SVG.SVG_Root dSvgRootAttrs $
