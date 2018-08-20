@@ -275,7 +275,7 @@ squares sGen = do
 
   rec (dSqCount, eSqCountChg) <- RD.divClass "sqr-inc-dec" $ do
         eIncSq <- B.bsButton_ "+ Sqr" B.Info
-        _ <- RD.dynText $ mappend "Square Count: " . tshow . unCount <$> dSqCount
+        _      <- RD.dynText $ ("Square Count: " <>) . tshow . unCount <$> dSqCount
         eDecSq <- B.bsButton_ "- Sqr" B.Info
 
         dSqrs <- RD.foldDyn ($) sqCount $ RD.mergeWith (.)
@@ -308,6 +308,7 @@ squares sGen = do
 
   void . RD.elAttr "div" ("class" =: "svg-scaler") . B.contained
     . SVG.svgElDynAttr' SVG.SVG_Root dSvgRootAttrs $
-      RD.simpleList (NE.toList <$> dPolys) (\dPoly ->
+      -- Polygons are kept in a 'NonEmpty' list so we always have something to draw
+      RD.simpleList (NE.toList <$> dPolys) $ \dPoly ->
+        -- Apply the shifting perlin noise function to our polygon
         SVG.svgBasicDyn_ SVG.Polygon makePolyProps (dPerlin <*> dPoly)
-                                           )

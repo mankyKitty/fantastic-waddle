@@ -1,4 +1,4 @@
-#+REVEAL_ROOT: http://cdn.jsdelivr.net/reveal.js/3.0.0/
+#+REVEAL_ROOT: https://cdn.jsdelivr.net/reveal.js/3.0.0/
 #+OPTIONS: reveal_title_slide:"<h1>%t</h1><h2>%a</h2><h3>%e</h3>"
 #+OPTIONS: num:nil
 #+OPTIONS: toc:nil
@@ -15,23 +15,23 @@
  - Largely autonomous
  - Often emergent
  - Yet another fascinating rabbit hole
-** Sometimes familiar
+** familiar
 #+DOWNLOADED: http://www.complexification.net/gallery/machines/substrate/substrate0014.jpg @ 2018-08-08 11:46:12
 [[file:genEvoArt/substrate0014_2018-08-08_11-46-12.jpg]]
 
 - Title: *Substrate*
 - Source: [[http://www.complexification.net/gallery/machines/substrate/index.php][Complexification]]
 
-** Occasionally bizarre
+** bizarre
 #+ATTR_HTML: :width 60% :height 60%
 file:genEvoArt/hairball_mantra_10_1_2018-08-08_11-55-33.jpg
 
 - Title: *Coloured Trails (Point Advection & Rendering)*
 - Source: [[http://www.entagma.com/colored-trails-point-advection-rendering/][Entagma]]
 
-** Often simple
+** simple
 #+ATTR_HTML: :width 40% :height 40%
-file:genEvoArt/tiledLines.png 
+file:genEvoArt/tiledLines.png
 
 - Title: *Tiled Lines*
 - Image: [[https://github.com/mankyKitty/fantastic-waddle][This Presentation]]
@@ -62,11 +62,11 @@ file:genEvoArt/tiledLines.png
    - ~Behaviour~ and ~Dynamic~ : ~Functor~, ~Applicative~, ~Monad~
    - Things can become a little... terse.
      #+INCLUDE: "../frontend/src/SVG/Squares.hs" :LINES "288-290" src haskell
-* Tiled Lines
+* Tiled Lines - Canvas
 ** Basic Idea
    #+ATTR_REVEAL: :frag (roll-in)
    - Draw a line of predetermined length
-   - Decide to turn 90degrees left or right
+   - Decide to turn 90$^{\circ}$ left or right
    - Draw a line of predetermined length
    - Repeat ${(size/step)^2}$ times
 ** Random Have I ? Can
@@ -91,12 +91,13 @@ foldDyn :: (... t, ... m) => (a -> b -> b) -> b -> Event t a -> m (Dynamic t b)
    #+END_SRC
    #+INCLUDE: "../frontend/src/Canvas2D/TiledLines.hs" :LINES "141-143" src haskell
    #+INCLUDE: "../frontend/src/Canvas2D/TiledLines.hs" :LINES "151-155" src haskell
-** Enter The Canvas 
+** Enter The Canvas
+   #+REVEAL_ATTR: :frag (roll-in)
    - Use ~ghcjs-dom~ for API functions:
      #+INCLUDE: "../frontend/src/Canvas2D/TiledLines.hs" :LINES "30-31" src haskell
      #+INCLUDE: "../frontend/src/Canvas2D/TiledLines.hs" :LINES "126-128" src haskell
    - We still need a ~CanvasRenderingContext2D~:
-     #+INCLUDE: "../frontend/src/Canvas2D/Internal.hs" :LINES "24-34" src haskell
+     #+INCLUDE: "../frontend/src/Canvas2D/Internal.hs" :LINES "29-34" src haskell
 ** Fingers on the screen
    #+BEGIN_SRC haskell
 requestDomAction :: DomRenderHook t m => Event t (JSM a) -> m (Event t a)
@@ -104,11 +105,121 @@ requestDomAction :: DomRenderHook t m => Event t (JSM a) -> m (Event t a)
    #+ATTR_REVEAL: :frag (roll-in)
    - Send our instructions to the canvas
      #+INCLUDE: "../frontend/src/Canvas2D/TiledLines.hs" :LINES "162-169" src haskell
-** Drawing the lines    
+** Drawing the lines
    #+INCLUDE: "../frontend/src/Canvas2D/TiledLines.hs" :LINES "125-136" src haskell
-* Squares
-* Game of Life
+* Squares - SVG
+  #+ATTR_HTML: :width 40% :height 40%
+  file:Squares%20-%20SVG/final_colored_grid_2018-08-20_13-11-31.png
+  - Source: [[https://www.kovach.me/posts/2018-03-07-generating-art.html][Benjamin Kovach]]
+** Basic Idea
+   #+ATTR_REVEAL: :frag (roll-in)
+   - Randomly place a bunch of squares such that none intersect
+   - Randomly apply colouring and fill to each square
+   - Apply perlin noise to the corners of the squares
+** Elements
+   #+ATTR_REVEAL: :frag (roll-in)
+   - Creating custom element types can be tedious and error prone
+     #+BEGIN_SRC haskell
+elAttr "rect" ("x" =: "30" <> "y" =: "40" <> "width" =: "100" <> "height" =: "200") blank
+     #+END_SRC
+   - All properties must be given as ~Text~ values
+   - Typos abound!
+** Introducing ~reflex-dom-svg~
+   #+ATTR_REVEAL: :frag (roll-in)
+   - This package provides data types for:
+     #+ATTR_REVEAL: :frag (roll-in)
+     * Basic shapes (~rect~, ~path~, ~circle~)
+     * Their required and some optional properties
+     * The ~animate~ element
+   - It also provides functions, lenses, and prisms to make your life easier
+** Thus
+   #+ATTR_REVEAL: :frag (roll-in)
+   - What was sad
+     #+BEGIN_SRC haskell
+... "rect" ("x" =: "30" <> "y" =: "40" <> "width" =: "100" <> "height" =: "200")
+     #+END_SRC
+   - Becomes happy
+     #+BEGIN_SRC haskell
+data SVG_Rect = SVG_Rect
+  { _svg_rect_pos_x          :: Pos X
+  , _svg_rect_pos_y          :: Pos Y
+  , _svg_rect_width          :: Width
+  , _svg_rect_height         :: Height
+  , _svg_rect_cornerRadius_x :: Maybe (CornerRadius X)
+  , _svg_rect_cornerRadius_y :: Maybe (CornerRadius Y)
+  }
+     #+END_SRC
+** Put the G in SVG
+   #+ATTR_REVEAL: :frag (roll-in)
+   - To put a basic shape on the page
+     #+BEGIN_SRC haskell
+-- No child elements
+svgBasicDyn_ :: s -> (p -> Map Text Text) -> Dynamic t p -> m (SVGEl t s)
+
+-- Only allow a subset of SVG elements as possible child elements
+svgBasicDyn  :: s -> (p -> Map Text Text) -> Dynamic t p 
+  -> Dynamic t (Map (CanBeNested s) (Map Text Text)) 
+  -> m (SVGEl t s)
+     #+END_SRC
+   - Looks like
+     #+BEGIN_SRC haskell
+SVG.svgBasicDyn_
+  SVG.Rect                      -- Indicate we want a '<rect>' element
+  SVG.makeRectProps             -- Use the library provided function for handling properties
+  dMyRectProps                  -- Provide our `Dynamic` SVG_Rect record
+     #+END_SRC
+** Data structures for great justice
+   #+ATTR_REVEAL: :frag (roll-in)
+   - Our piece requires possibly hundreds of elements
+   - We have data structures to manage individual pieces
+   - We benefit from all the delicious /existing/ abstractions
+   - Apply the perlin noise function to every point in a polygon
+     #+ATTR_REVEAL: :frag (appear)
+     - Given
+       #+INCLUDE: "../frontend/src/SVG/Types.hs" :LINES "53-57" src haskell
+     - We can lens & ~traverse~ our way to victory!
+       #+INCLUDE: "../frontend/src/SVG/Squares.hs" :LINES "189-194" src haskell
+** Gift keeps giving 
+   #+ATTR_REVEAL: :frag (roll-in)
+   - ~reflex~ provides additional functionality for collections
+     #+BEGIN_SRC haskell
+simpleList :: Dynamic t [v] -> (Dynamic t v -> m a) -> m (Dynamic t [a])
+     #+END_SRC
+   - So if you have a list of polygons that will change over time...
+     #+INCLUDE: "../frontend/src/SVG/Squares.hs" :LINES "311-315" src haskell
+** Moving parts 
+   We have a few things to juggle:
+   #+ATTR_REVEAL: :frag (roll-in)
+   - Maximum number of squares to be generated
+   - A random seed, which produces a new seed when used
+   - Changing 'scale' value for use in the perlin noise function
+   - Automatic or manual update to element properties
+   - We'll go over a couple of these to see how ~reflex~ makes our life easier
+** Countin' squares
+   #+ATTR_REVEAL: :frag (roll-in)
+   - We need a way to +/- our maximum number of squares
+     #+INCLUDE: "../frontend/src/SVG/Squares.hs" :LINES "276-280" src haskell
+   - Then we need to keep track of the value over time
+     #+INCLUDE: "../frontend/src/SVG/Squares.hs" :LINES "281-285" src haskell
+   - Wrap up our recursive section
+     #+INCLUDE: "../frontend/src/SVG/Squares.hs" :LINES "286-287" src haskell
+** Reflexin'
+   Lets unpack our mightly terse example from earlier.
+#+BEGIN_SRC haskell
+  -- We use recursive 'do' here because our Dynamic t StdGen is defined in terms of itself.
+  rec (dPolys, dGen) <-
+        -- Takes a Dynamic (a,b) and returns (Dynamic a, Dynamic b)
+        fmap RD.splitDynPure .
+        -- Create our Dynamic with an initial value, to be updated with...
+        RD.holdDyn (genPolys sqCount sGen) $
+          -- a 'Behaviour' that uses our current square count and random seed
+          RD.current (genPolys <$> dSqCount <*> dGen)
+          -- Sample our generated list of polygons when asked
+          <@ (eGenerate <> eSqCountChg)
+#+END_SRC
+
+* Game of Life - WebGL
 ** Nothing up my sleeves
 ** Orchestration
 ** Pew pew photons
-* Are we 3D yet?
+* Are we 3D yet? - WebGL
