@@ -15,24 +15,23 @@
  - Largely autonomous
  - Often emergent
  - Yet another fascinating rabbit hole
-
-**
+** Sometimes familiar
 #+DOWNLOADED: http://www.complexification.net/gallery/machines/substrate/substrate0014.jpg @ 2018-08-08 11:46:12
 [[file:genEvoArt/substrate0014_2018-08-08_11-46-12.jpg]]
 
 - Title: *Substrate*
 - Source: [[http://www.complexification.net/gallery/machines/substrate/index.php][Complexification]]
 
-**
-#+DOWNLOADED: http://www.entagma.com/wp-content/uploads/2016/09/hairball_mantra_10_1.jpg @ 2018-08-08 11:55:33
-[[file:genEvoArt/hairball_mantra_10_1_2018-08-08_11-55-33.jpg]]
+** Occasionally bizarre
+#+ATTR_HTML: :width 60% :height 60%
+file:genEvoArt/hairball_mantra_10_1_2018-08-08_11-55-33.jpg
 
 - Title: *Coloured Trails (Point Advection & Rendering)*
 - Source: [[http://www.entagma.com/colored-trails-point-advection-rendering/][Entagma]]
 
-**
+** Often simple
 #+ATTR_HTML: :width 40% :height 40%
-file:genEvoArt/tiledLines.png
+file:genEvoArt/tiledLines.png 
 
 - Title: *Tiled Lines*
 - Image: [[https://github.com/mankyKitty/fantastic-waddle][This Presentation]]
@@ -65,52 +64,51 @@ file:genEvoArt/tiledLines.png
      #+INCLUDE: "../frontend/src/SVG/Squares.hs" :LINES "288-290" src haskell
 * Tiled Lines
 ** Basic Idea
+   #+ATTR_REVEAL: :frag (roll-in)
    - Draw a line of predetermined length
    - Decide to turn 90degrees left or right
    - Draw a line of predetermined length
    - Repeat ${(size/step)^2}$ times
-** Deja this one
-#+ATTR_HTML: :width 40% :height 40%
-file:genEvoArt/tiledLines.png
 ** Random Have I ? Can
    #+INCLUDE: "../frontend/src/Canvas2D/TiledLines.hs" :LINES "52-56" src haskell
    #+INCLUDE: "../frontend/src/Canvas2D/TiledLines.hs" :LINES "74-84" src haskell
 ** Glorious Loops
+   #+ATTR_REVEAL: :frag (roll-in)
    - Ancient '~for~' runes, circa 3050BC
-  #+BEGIN_SRC javascript
-    for (var x = 0; x < size; x += step) {
-      for (var y = 0; y < size; y += step) {
-      }
-    }
-  #+END_SRC
-  - More modern functional variant
-   #+INCLUDE: "../frontend/src/Canvas2D/TiledLines.hs" :LINES "129-133" src haskell
+    #+BEGIN_SRC javascript
+for (var x = 0; x < size; x += step) {
+  for (var y = 0; y < size; y += step) {
+  }
+}
+    #+END_SRC
+   - More modern functional variant
+    #+INCLUDE: "../frontend/src/Canvas2D/TiledLines.hs" :LINES "129-133" src haskell
 ** Bump step
    #+INCLUDE: "../frontend/src/Canvas2D/TiledLines.hs" :LINES "145-147" src haskell
-** Step state  
+** Step state
    #+BEGIN_SRC haskell
 foldDyn :: (... t, ... m) => (a -> b -> b) -> b -> Event t a -> m (Dynamic t b)
    #+END_SRC
    #+INCLUDE: "../frontend/src/Canvas2D/TiledLines.hs" :LINES "141-143" src haskell
    #+INCLUDE: "../frontend/src/Canvas2D/TiledLines.hs" :LINES "151-155" src haskell
+** Enter The Canvas 
+   - Use ~ghcjs-dom~ for API functions:
+     #+INCLUDE: "../frontend/src/Canvas2D/TiledLines.hs" :LINES "30-31" src haskell
+     #+INCLUDE: "../frontend/src/Canvas2D/TiledLines.hs" :LINES "126-128" src haskell
+   - We still need a ~CanvasRenderingContext2D~:
+     #+INCLUDE: "../frontend/src/Canvas2D/Internal.hs" :LINES "24-34" src haskell
 ** Fingers on the screen
    #+BEGIN_SRC haskell
-requestDomAction :: ( DomRenderHook t m ) => RD.Event () (JSM ()) -> m (RD.Event () ())
+requestDomAction :: DomRenderHook t m => Event t (JSM a) -> m (Event t a)
    #+END_SRC
-   #+INCLUDE: "../frontend/src/Canvas2D/TiledLines.hs" :LINES "162-169" src haskell
-
-* Joy Division
-** Convenient choices
-   - Factor out common elements easily
-   #+INCLUDE: "../frontend/src/Styling/Bootstrap.hs" :LINES "73-77" src haskell
-   - Holy code reuse!
-   #+INCLUDE: "../frontend/src/Canvas2D/JoyDivision.hs" :LINES "185-186" src haskell
-   #+INCLUDE: "../frontend/src/Canvas2D/JoyDivision.hs" :LINES "191-192" src haskell
-   #+INCLUDE: "../frontend/src/Canvas2D/JoyDivision.hs" :LINES "197-198" src haskell
-** Combining Inputs
-   #+INCLUDE: "../frontend/src/Canvas2D/JoyDivision.hs" :LINES "218-224" src haskell
+   #+ATTR_REVEAL: :frag (roll-in)
+   - Send our instructions to the canvas
+     #+INCLUDE: "../frontend/src/Canvas2D/TiledLines.hs" :LINES "162-169" src haskell
+** Drawing the lines    
+   #+INCLUDE: "../frontend/src/Canvas2D/TiledLines.hs" :LINES "125-136" src haskell
+* Squares
 * Game of Life
 ** Nothing up my sleeves
 ** Orchestration
-** Hocking photons   
+** Pew pew photons
 * Are we 3D yet?

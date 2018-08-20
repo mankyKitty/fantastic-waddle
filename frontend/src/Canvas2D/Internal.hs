@@ -1,22 +1,22 @@
+{-# LANGUAGE DataKinds         #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE DataKinds #-}
-module Canvas2D.Internal 
+module Canvas2D.Internal
   ( createCanvasForCx
   , withStdGen
   ) where
 
-import Control.Monad.State (runStateT,gets,put,lift)
+import           Control.Monad.State                (gets, lift, put, runStateT)
 
-import Data.Map (Map)
-import Data.Text (Text)
+import           Data.Map                           (Map)
+import           Data.Text                          (Text)
 
-import System.Random (StdGen,Random)
-import qualified System.Random as Rnd
+import           System.Random                      (Random, StdGen)
+import qualified System.Random                      as Rnd
 
-import Reflex.Dom.Core (MonadWidget,Dynamic)
-import qualified Reflex.Dom.Core as RD
+import           Reflex.Dom.Core                    (Dynamic, MonadWidget)
+import qualified Reflex.Dom.Core                    as RD
 
-import GHCJS.DOM.CanvasRenderingContext2D (CanvasRenderingContext2D)
+import           GHCJS.DOM.CanvasRenderingContext2D (CanvasRenderingContext2D)
 
 import qualified Reflex.Dom.CanvasBuilder.Types     as CTypes
 import qualified Reflex.Dom.CanvasDyn               as C
