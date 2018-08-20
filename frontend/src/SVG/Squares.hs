@@ -275,7 +275,7 @@ squares sGen = do
 
   rec (dSqCount, eSqCountChg) <- RD.divClass "sqr-inc-dec" $ do
         eIncSq <- B.bsButton_ "+ Sqr" B.Info
-        _      <- RD.dynText $ ("Square Count: " <>) . tshow . unCount <$> dSqCount
+        _      <- RD.dynText $ (<> "# Squares") . tshow . unCount <$> dSqCount
         eDecSq <- B.bsButton_ "- Sqr" B.Info
 
         dSqrs <- RD.foldDyn ($) sqCount $ RD.mergeWith (.)
