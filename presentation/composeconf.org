@@ -195,16 +195,11 @@ simpleList :: Dynamic t [v] -> (Dynamic t v -> m a) -> m (Dynamic t [a])
    - Changing 'scale' value for use in the perlin noise function
    - Automatic or manual update to element properties
    - We'll go over a couple of these to see how ~reflex~ makes our life easier
-** Countin' squares
-   #+ATTR_REVEAL: :frag (roll-in)
-   - We need a way to +/- our maximum number of squares
-     #+INCLUDE: "../frontend/src/SVG/Squares.hs" :LINES "276-280" src haskell
-   - Then we need to keep track of the value over time
-     #+INCLUDE: "../frontend/src/SVG/Squares.hs" :LINES "281-285" src haskell
-   - Wrap up our recursive section
-     #+INCLUDE: "../frontend/src/SVG/Squares.hs" :LINES "286-287" src haskell
 ** Reflexin'
-   Lets unpack our mightly terse example from earlier.
+   Lets unpack our slightly gnarly example from earlier.
+   #+BEGIN_SRC haskell
+genPolys :: RandomGen g -> Count -> g -> (NonEmpty Poly, g)
+   #+END_SRC
 #+BEGIN_SRC haskell
   -- We use recursive 'do' here because our Dynamic t StdGen is defined in terms of itself.
   rec (dPolys, dGen) <-
@@ -217,7 +212,6 @@ simpleList :: Dynamic t [v] -> (Dynamic t v -> m a) -> m (Dynamic t [a])
           -- Sample our generated list of polygons when asked
           <@ (eGenerate <> eSqCountChg)
 #+END_SRC
-
 * Game of Life - WebGL
 ** Nothing up my sleeves
 ** Orchestration
