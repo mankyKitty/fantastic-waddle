@@ -1,5 +1,5 @@
 #+REVEAL_ROOT: https://cdn.jsdelivr.net/reveal.js/3.0.0/
-#+OPTIONS: reveal_title_slide:"<h1>%t</h1><h2>%a</h2><h3>%e</h3>"
+#+OPTIONS: reveal_title_slide:"<h1>%t</h1><h2>%a</h2><h4>QFPL</h4><h3>%e</h3>"
 #+OPTIONS: num:nil
 #+OPTIONS: toc:nil
 
@@ -12,67 +12,85 @@
  - Show that Haskell is more than capable of front-end art & animation.
  - Encourage / inspire you to take the plunge!
 * Generative and Evolutionary Art
+  #+ATTR_REVEAL: :frag (roll-in)
  - Largely autonomous
  - Often emergent
- - Yet another fascinating rabbit hole
+ - A fascinating rabbit hole
 ** familiar
 #+DOWNLOADED: http://www.complexification.net/gallery/machines/substrate/substrate0014.jpg @ 2018-08-08 11:46:12
 [[file:genEvoArt/substrate0014_2018-08-08_11-46-12.jpg]]
 
 - Title: *Substrate*
 - Source: [[http://www.complexification.net/gallery/machines/substrate/index.php][Complexification]]
-
 ** bizarre
 #+ATTR_HTML: :width 60% :height 60%
 file:genEvoArt/hairball_mantra_10_1_2018-08-08_11-55-33.jpg
 
 - Title: *Coloured Trails (Point Advection & Rendering)*
 - Source: [[http://www.entagma.com/colored-trails-point-advection-rendering/][Entagma]]
-
 ** simple
-#+ATTR_HTML: :width 40% :height 40%
+#+ATTR_HTML: :width 40% :height 40% :style background-color:white;
 file:genEvoArt/tiledLines.png
 
 - Title: *Tiled Lines*
 - Image: [[https://github.com/mankyKitty/fantastic-waddle][This Presentation]]
 - Technique: [[https://generativeartistry.com/tutorials/tiled-lines][Generative Artistry]]
-
 * Why Haskell?
-  - Types
-    - Types
+  - Cool Types
+    - Clever Types
       - Functions as values
-        - Types
-          - Lens
-            - Types
-              - GHC
-                - Types
-                  - ~traverse~
+        - Silly Types
+          - Lenses
+            - Types that climb on rocks
+              - GHC/GHCJS
+                - ~traverse~
 * Why Reflex?
-  - Functional Reactive Programming.
-  - Flexible and powerful technique for describing interactions over time.
-  - Not enough time to provide a /complete/ tutorial.
-    - Check references for some links, or come ask me later!
+  - Functional Reactive Programming
+  - Flexible and powerful technique for describing interactions over time
+  - Check the references for some links and come to the workshop tomorrow!!
 ** The basics
+   #+ATTR_REVEAL: :frag (roll-in)
    - ~Event~ : a value at *a point* in time.
    - ~Behaviour~ : a value at *all points* in time.
    - ~Dynamic~ : Combination of an ~Event~ and a ~Behaviour~.
-     - Unique to Reflex.
-** Instances & combinators
-   - ~Event~ : ~Functor~
-   - ~Behaviour~ and ~Dynamic~ : ~Functor~, ~Applicative~, ~Monad~
-   - Things can become a little... terse.
-     #+INCLUDE: "../frontend/src/SVG/Squares.hs" :LINES "288-290" src haskell
+     * Unique to Reflex.
 * Tiled Lines - Canvas
+  #+ATTR_HTML: :width 40% :height 40%
+  file:genEvoArt/tiledLines.png
 ** Basic Idea
    #+ATTR_REVEAL: :frag (roll-in)
    - Draw a line of predetermined length
    - Decide to turn 90$^{\circ}$ left or right
    - Draw a line of predetermined length
    - Repeat ${(size/step)^2}$ times
-** Random Have I ? Can
+** Enter The Canvas
+   #+ATTR_REVEAL: :frag (roll-in)
+   - Use ~ghcjs-dom~ for API functions:
+     #+INCLUDE: "../frontend/src/Canvas2D/TiledLines.hs" :LINES "30-31" src haskell
+     #+INCLUDE: "../frontend/src/Canvas2D/TiledLines.hs" :LINES "126-128" src haskell
+     #+INCLUDE: "../frontend/src/Canvas2D/TiledLines.hs" :LINES "101-102" src haskell
+     #+INCLUDE: "../frontend/src/Canvas2D/TiledLines.hs" :LINES "135-136" src haskell
+** Requesting a Canvas Context
+   We need a canvas rendering context:
+   #+ATTR_REVEAL: :frag (roll-in)
+   - Create your canvas
+     #+INCLUDE: "../frontend/src/Canvas2D/Internal.hs" :LINES "29-31" src haskell
+   - Ask ~reflex-dom-canvas~ for a 2d drawing context
+     #+BEGIN_SRC haskell
+       dContext2d :: ... => CanvasConfig 'TwoD t -> m (Dynamic t (CanvasInfo 'TwoD t))
+     #+END_SRC
+     #+INCLUDE: "../frontend/src/Canvas2D/Internal.hs" :LINES "33-34" src haskell
+   - Yay!
+     #+BEGIN_SRC haskell
+     data CanvasInfo (c :: ContextType) t = CanvasInfo
+       { _canvasInfo_El      :: RD.El t
+       , _canvasInfo_context :: RenderContext c
+       ...
+     #+END_SRC
+** random Have i ? can
    #+INCLUDE: "../frontend/src/Canvas2D/TiledLines.hs" :LINES "52-56" src haskell
    #+INCLUDE: "../frontend/src/Canvas2D/TiledLines.hs" :LINES "74-84" src haskell
-** Glorious Loops
+** Glorious loops
    #+ATTR_REVEAL: :frag (roll-in)
    - Ancient '~for~' runes, circa 3050BC
     #+BEGIN_SRC javascript
@@ -83,21 +101,22 @@ for (var x = 0; x < size; x += step) {
     #+END_SRC
    - More modern functional variant
     #+INCLUDE: "../frontend/src/Canvas2D/TiledLines.hs" :LINES "129-133" src haskell
+** Glorious lines
+#+BEGIN_SRC haskell
+  eGoDo :: Event t (JSM ())
+  eGoDo = current (drawSteps <$> dCx) <@ ePost
+#+END_SRC
 ** Bump step
    #+INCLUDE: "../frontend/src/Canvas2D/TiledLines.hs" :LINES "145-147" src haskell
+   #+BEGIN_SRC haskell
+eInc, eDec :: Event t ()
+   #+END_SRC
 ** Step state
    #+BEGIN_SRC haskell
 foldDyn :: (... t, ... m) => (a -> b -> b) -> b -> Event t a -> m (Dynamic t b)
    #+END_SRC
    #+INCLUDE: "../frontend/src/Canvas2D/TiledLines.hs" :LINES "141-143" src haskell
    #+INCLUDE: "../frontend/src/Canvas2D/TiledLines.hs" :LINES "151-155" src haskell
-** Enter The Canvas
-   #+REVEAL_ATTR: :frag (roll-in)
-   - Use ~ghcjs-dom~ for API functions:
-     #+INCLUDE: "../frontend/src/Canvas2D/TiledLines.hs" :LINES "30-31" src haskell
-     #+INCLUDE: "../frontend/src/Canvas2D/TiledLines.hs" :LINES "126-128" src haskell
-   - We still need a ~CanvasRenderingContext2D~:
-     #+INCLUDE: "../frontend/src/Canvas2D/Internal.hs" :LINES "29-34" src haskell
 ** Fingers on the screen
    #+BEGIN_SRC haskell
 requestDomAction :: DomRenderHook t m => Event t (JSM a) -> m (Event t a)
@@ -157,8 +176,8 @@ data SVG_Rect = SVG_Rect
 svgBasicDyn_ :: s -> (p -> Map Text Text) -> Dynamic t p -> m (SVGEl t s)
 
 -- Only allow a subset of SVG elements as possible child elements
-svgBasicDyn  :: s -> (p -> Map Text Text) -> Dynamic t p 
-  -> Dynamic t (Map (CanBeNested s) (Map Text Text)) 
+svgBasicDyn  :: s -> (p -> Map Text Text) -> Dynamic t p
+  -> Dynamic t (Map (CanBeNested s) (Map Text Text))
   -> m (SVGEl t s)
      #+END_SRC
    - Looks like
@@ -179,7 +198,7 @@ SVG.svgBasicDyn_
        #+INCLUDE: "../frontend/src/SVG/Types.hs" :LINES "53-57" src haskell
      - We can lens & ~traverse~ our way to victory!
        #+INCLUDE: "../frontend/src/SVG/Squares.hs" :LINES "189-194" src haskell
-** Gift keeps giving 
+** Gift keeps giving
    #+ATTR_REVEAL: :frag (roll-in)
    - ~reflex~ provides additional functionality for collections
      #+BEGIN_SRC haskell
@@ -187,20 +206,23 @@ simpleList :: Dynamic t [v] -> (Dynamic t v -> m a) -> m (Dynamic t [a])
      #+END_SRC
    - So if you have a list of polygons that will change over time...
      #+INCLUDE: "../frontend/src/SVG/Squares.hs" :LINES "311-315" src haskell
-** Moving parts 
+** Moving parts
    We have a few things to juggle:
    #+ATTR_REVEAL: :frag (roll-in)
    - Maximum number of squares to be generated
    - A random seed, which produces a new seed when used
    - Changing 'scale' value for use in the perlin noise function
    - Automatic or manual update to element properties
-   - We'll go over a couple of these to see how ~reflex~ makes our life easier
+** Dynamic Randoms
+     #+INCLUDE: "../frontend/src/SVG/Squares.hs" :LINES "204-218" src haskell
+** HTML Inputs
+     #+INCLUDE: "../frontend/src/SVG/Squares.hs" :LINES "293-300" src haskell
 ** Reflexin'
    Lets unpack our slightly gnarly example from earlier.
    #+BEGIN_SRC haskell
 genPolys :: RandomGen g -> Count -> g -> (NonEmpty Poly, g)
    #+END_SRC
-#+BEGIN_SRC haskell
+   #+BEGIN_SRC haskell
   -- We use recursive 'do' here because our Dynamic t StdGen is defined in terms of itself.
   rec (dPolys, dGen) <-
         -- Takes a Dynamic (a,b) and returns (Dynamic a, Dynamic b)
@@ -211,8 +233,11 @@ genPolys :: RandomGen g -> Count -> g -> (NonEmpty Poly, g)
           RD.current (genPolys <$> dSqCount <*> dGen)
           -- Sample our generated list of polygons when asked
           <@ (eGenerate <> eSqCountChg)
-#+END_SRC
+   #+END_SRC
+
 * Game of Life - WebGL
+file:genEvoArt/gol.gif
+- Source [[https://nullprogram.com/blog/2014/06/10/][Chris Wellons]]
 ** Nothing up my sleeves
 ** Orchestration
 ** Pew pew photons
