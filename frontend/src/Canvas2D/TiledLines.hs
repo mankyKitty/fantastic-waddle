@@ -4,7 +4,6 @@
 {-# LANGUAGE OverloadedStrings          #-}
 module Canvas2D.TiledLines where
 
-import           Control.Lens                       (over, _1)
 import           GHC.Word                           (Word8)
 
 import           Text.Read                          (readMaybe)
@@ -14,6 +13,7 @@ import           Data.Map                           (Map)
 import           Data.Text                          (Text)
 import qualified Data.Text                          as Text
 
+import           Data.Bifunctor                     (first)
 import           Data.Bool                          (bool)
 import           Data.Foldable                      (forM_)
 import           Data.Semigroup                     ((<>))
@@ -75,7 +75,7 @@ ltor1 :: IO LR
 ltor1 = MRnd.uniform [RightToLeft, LeftToRight]
 
 ltor2 :: Rnd.StdGen -> (LR, Rnd.StdGen)
-ltor2 = over _1 (bool RightToLeft LeftToRight . (>= 0.5))
+ltor2 = first (bool RightToLeft LeftToRight . (>= 0.5))
   . Rnd.randomR (0::Double,1.0)
 
 ltor3 :: MonadIO m => m LR

@@ -195,9 +195,9 @@ gol sGen = RD.divClass "gol" $ do
   ePost <- RD.getPostBuild
   eTick <- () <$$ RD.tickLossyFromPostBuildTime 0.1
 
-  eReset <- B.bsButton_ "Reset" B.Secondary
+  eReset    <- B.bsButton_ "Reset" B.Secondary
   eStepOnce <- B.bsButton_ "Step" B.Primary
-  eGoAuto <- B.bsButton_ "Auto" B.Primary
+  eGoAuto   <- B.bsButton_ "Toggle Animation" B.Primary
 
   dTick <- fmap (bool eStepOnce eTick) <$> R.toggle False eGoAuto
 
