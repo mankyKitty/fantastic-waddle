@@ -263,8 +263,11 @@ golCube sGen = RD.divClass "gol-cube" $ do
     R.current (createGOLCube <$> _cubeInfoCx cI) <@ (cI ^. cubeInfoPost)
 
   eInitialDraw <- RD.requestDomAction $ R.current (
-    (\c -> traverseOf golCubeGOL (GOL.setInitialState sGen c) >=> golCubeDraw noMove c) <$> _cubeInfoCx cI)
-    <@> eGol
+    (\c ->
+       traverseOf golCubeGOL (GOL.setInitialState sGen c)
+       >=> golCubeDraw noMove c
+    ) <$> _cubeInfoCx cI
+    ) <@> eGol
 
   _ <- RD.widgetHold (RD.text "Nothing Ready Yet") $ R.leftmost
     [ golCubeError <$> eError

@@ -202,11 +202,13 @@ golRender golInfo sGen gol' = mdo
 
   let
     glRun f eGo = RD.requestDomAction $ R.current
-      ((\c -> f c >=> draw c) <$> _golCx golInfo <*> dGOL)
-      <@ eGo
+      ( (\c -> f c >=> draw c)
+        <$> _golCx golInfo
+        <*> dGOL
+      ) <@ eGo
 
-  eStepRendered <- glRun step $ R.switchDyn (_golAuto golInfo)
-  eWasReset <- glRun (setInitialState sGen) $ _golReset golInfo
+  eStepRendered <- glRun step . R.switchDyn $ _golAuto golInfo
+  eWasReset     <- glRun (setInitialState sGen) $ _golReset golInfo
 
   pure ()
 
@@ -243,4 +245,3 @@ gol sGen = RD.divClass "gol" $ do
     ]
 
   pure ()
-

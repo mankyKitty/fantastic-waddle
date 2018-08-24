@@ -113,14 +113,14 @@ file:genEvoArt/tiledLines.png
 ** Glorious loops
    Repeat, lots.
    #+ATTR_REVEAL: :frag (roll-in)
-   - Ancient '~for~' runes, circa 3050BC
+   - imperative, mutable
     #+BEGIN_SRC javascript
 for (var x = 0; x < size; x += step) {
   for (var y = 0; y < size; y += step) {
   }
 }
     #+END_SRC
-   - More modern functional variant
+   - functional, immutable
     #+INCLUDE: "../frontend/src/Canvas2D/TiledLines.hs" :LINES "129-133" src haskell
 ** Glorious lines
 #+BEGIN_SRC haskell
@@ -298,7 +298,7 @@ file:genEvoArt/gol.gif
    We can have /nicer/ things.
    #+INCLUDE: "../frontend/src/WebGL/Types.hs" :LINES "80-98" src haskell
    ~MonadJSM~ ~ ~MonadIO~ when building with GHCJS.
-** Unremarkable code 
+** Unremarkable code
    #+INCLUDE: "../frontend/src/WebGL/Internal.hs" :LINES "46-53" src haskell
    #+INCLUDE: "../frontend/src/WebGL/Internal.hs" :LINES "66-72" src haskell
 ** Code unremarkable
@@ -307,7 +307,7 @@ file:genEvoArt/gol.gif
    #+INCLUDE: "../frontend/src/WebGL/Internal.hs" :LINES "80-82" src haskell
    Lean on our abstractions to handle plumbing
    #+INCLUDE: "../frontend/src/WebGL/Internal.hs" :LINES "73-78" src haskell
-** Abstraction to ~Event~   
+** Abstraction to ~Event~
    Reflex helps out here too:
    #+BEGIN_SRC haskell
      fanEither :: ... => Event t (Either a b) -> (Event t a, Event t b)
@@ -317,12 +317,48 @@ file:genEvoArt/gol.gif
      createGOL :: ... => WebGLRenderingContext -> m (Either Error GOL)
    #+END_SRC
    #+ATTR_REVEAL: :frag (roll-in)
-   #+INCLUDE: "../frontend/src/WebGL/GOL.hs" :LINES "234-237" src haskell
+   #+INCLUDE: "../frontend/src/WebGL/GOL.hs" :LINES "236-238" src haskell
    #+ATTR_REVEAL: :frag (roll-in)
    #+BEGIN_SRC haskell
      eError :: Event t Error
      eGol :: Event t GOL
    #+END_SRC
 ** Fork in the graph
-** Pew pew photons
+   #+ATTR_REVEAL: :frag (roll-in)
+   - An error - Bugger
+   - An initialised environment - Woot
+   - Reflex comes out to play, again.
+   - ~Switching~
+   - There are efficiency benefits too, as disconnected pieces of the graph are garbage collected
+** Only what we need
+   The FP way, narrow your focus/function to a smaller problem.
+   #+ATTR_REVEAL: :frag (roll-in)
+   - One to display the error
+     #+BEGIN_SRC haskell
+       golError :: ... => Error -> m ()
+     #+END_SRC
+   - One to run the orchestration for our WebGL
+     #+BEGIN_SRC haskell
+       golRender :: ... => GOLInfo t -> StdGen -> GOL -> m ()
+     #+END_SRC
+** Making the choice
+   #+INCLUDE: "../frontend/src/WebGL/GOL.hs" :LINES "242-246" src haskell
+** Manage change
+   - Maintain our ~GOL~ record in a ~Dynamic~
+   - At it will change over time
+   - We let Reflex manage that for us
+     #+INCLUDE: "../frontend/src/WebGL/GOL.hs" :LINES "198-202" src haskell
+   - Updated on a step or reset ~Event~
+     #+BEGIN_SRC haskell
+       eStepRendered :: Event t GOL
+       eWasReset     :: Event t GOL
+     #+END_SRC
+** ~Event~ to draw
+   #+INCLUDE: "../frontend/src/WebGL/GOL.hs" :LINES "204-209" src haskell
+   /NOTE:/ Use of ~dGOL~ in this definition.
+** Render a Step  
+   #+BEGIN_SRC haskell
+     step :: ... => WebGLRenderingContext -> GOL -> m GOL
+   #+END_SRC
+   #+INCLUDE: "../frontend/src/WebGL/GOL.hs" :LINES "210-211" src haskell
 * Cube of Life (Spicy) - WebGL
