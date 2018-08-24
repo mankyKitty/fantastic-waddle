@@ -10,12 +10,8 @@ import           Control.Monad.Except                (runExceptT)
 import           Control.Monad                       ((>=>))
 
 import           Data.Bool                           (bool)
-import           Data.Foldable                       (fold)
 import           Data.Function                       ((&))
 import           Data.Semigroup                      ((<>))
-
-import           Data.Text                           (Text)
-import qualified Data.Text                           as Text
 
 import           System.Random                       (StdGen)
 import qualified System.Random                       as Rnd
@@ -25,8 +21,7 @@ import           Reflex.Dom.Core                     (Widget, (=:))
 import qualified Reflex.Dom.Core                     as RD
 
 import           GHCJS.DOM.Types                     (Float32Array, GLsizei,
-                                                      JSM, MonadJSM,
-                                                      WebGLProgram,
+                                                      MonadJSM, WebGLProgram,
                                                       WebGLRenderingContext,
                                                       WebGLTexture)
 
@@ -39,7 +34,7 @@ import qualified Reflex.Dom.CanvasDyn                as C
 
 import qualified Styling.Bootstrap                   as B
 
-import           Internal                            ((<$$),tshow)
+import           Internal                            (tshow, (<$$))
 
 import           WebGL.Types                         (Error, GOL (..),
                                                       HasGOL (..))
@@ -47,6 +42,13 @@ import qualified WebGL.Types                         as GLT
 
 import qualified WebGL.Internal                      as GLI
 import qualified WebGL.Shaders.GOL                   as Shaders
+
+data GOLInfo t = GOLInfo
+  { _golReset :: Event t ()
+  , _golStep  :: Event t ()
+  , _golAuto  :: Dynamic t (Event t ())
+  , _golCx    :: Dynamic t WebGLRenderingContext
+  }
 
 quad2 :: [Double]
 quad2 = [-1, -1, 1, -1, -1, 1, 1, 1]
@@ -103,11 +105,11 @@ stepRenderCopyTexture cx g = do
   GLB.framebufferTexture2D cx GLB.FRAMEBUFFER GLB.COLOR_ATTACHMENT0 GLB.TEXTURE_2D (g ^? golBack) 0
   f <$> renderUsing scaledWidth scaledHeight golFront golGOLProgram golStateSize cx g
   where
-    f g = g
-      & golFront .~ (g ^. golBack)
-      & golBack .~ (g ^. golFront)
-      & golFrameBufferB .~ (g ^. golFrameBufferA)
-      & golFrameBufferA .~ (g ^. golFrameBufferB)
+    f g' = g'
+      & golFront .~ (g' ^. golBack)
+      & golBack .~ (g' ^. golFront)
+      & golFrameBufferB .~ (g' ^. golFrameBufferA)
+      & golFrameBufferA .~ (g' ^. golFrameBufferB)
 
 step
   :: MonadJSM m
@@ -175,20 +177,38 @@ setInitialState sGen cx g = do
 
   pure g
 
-runGL
-  :: ( RD.DomRenderHook t m
-     , RD.MonadWidget t m
+golError
+  :: RD.MonadWidget t m
+  => Error
+  -> m ()
+golError err =
+  RD.divClass "error-wrapper" .
+    RD.divClass "error-message" $
+      RD.text (tshow err)
+
+golRender
+  :: ( RD.MonadWidget t m
+     , RD.DomRenderHook t m
      )
-  => Dynamic t WebGLRenderingContext
-  -> Dynamic t (Maybe GOL)
-  -> (WebGLRenderingContext -> GOL -> JSM GOL)
-  -> Event t a
-  -> m (Event t (Maybe GOL))
-runGL dCx dMGol glF eGo = RD.requestDomAction $
-  (\c g -> traverse (glF c >=> draw c) g)
-  <$> R.current dCx
-  <*> R.current dMGol
-  <@ eGo
+  => GOLInfo t
+  -> StdGen
+  -> GOL
+  -> m ()
+golRender golInfo sGen gol' = mdo
+  dGOL <- R.holdDyn gol' $ R.leftmost
+    [ eStepRendered
+    , eWasReset
+    ]
+
+  let
+    glRun f eGo = RD.requestDomAction $ R.current
+      ((\c -> f c >=> draw c) <$> _golCx golInfo <*> dGOL)
+      <@ eGo
+
+  eStepRendered <- glRun step $ R.switchDyn (_golAuto golInfo)
+  eWasReset <- glRun (setInitialState sGen) $ _golReset golInfo
+
+  pure ()
 
 gol :: StdGen -> Widget x ()
 gol sGen = RD.divClass "gol" $ do
@@ -209,34 +229,18 @@ gol sGen = RD.divClass "gol" $ do
     RD.blank
 
   dCx <- fmap _canvasInfo_context <$>
-    C.dContextWebgl (CanvasConfig canvas [])
+    C.dContextWebgl (CanvasConfig canvas mempty)
 
-  (eError, eGol) <- fmap R.fanEither <$> RD.requestDomAction $
-    createGOL <$> R.current dCx <@ ePost
-
-  dStatus <- R.holdDyn "Nothing Yet" $ R.leftmost
-    [ ("Bugger: " <>) . tshow <$> eError
-    , "Woot!" <$ eGol
-    ]
+  (eError, eGol) <- fmap R.fanEither . RD.requestDomAction $
+    R.current (createGOL <$> dCx) <@ ePost
 
   eDrawn <- RD.requestDomAction $
-    (\c -> setInitialState sGen c >=> draw c) <$> R.current dCx <@> eGol
+    R.current ((\c -> setInitialState sGen c >=> draw c) <$> dCx) <@> eGol
 
-  rec dMGol <- R.holdDyn Nothing $ R.leftmost
-        [ Just <$> eGol
-        , eStepRendered
-        , eWasReset
-        ]
-
-      eStepRendered <- runGL dCx dMGol step (R.switchDyn dTick)
-      eWasReset     <- runGL dCx dMGol (setInitialState sGen) eReset
-
-  dRendered <- R.holdDyn "Nothing Yet" $
-    ("Rendered!" <$ eDrawn) <>
-    ("Stepped!"  <$ eStepRendered) <>
-    ("Reset!"    <$ eWasReset)
-
-  RD.divClass "status" (RD.dynText dStatus)
-  RD.divClass "rendered" (RD.dynText dRendered)
+  _ <- RD.widgetHold (RD.text "Nothing Ready Yet.") $ R.leftmost
+    [ golError                                            <$> eError
+    , golRender (GOLInfo eReset eStepOnce dTick dCx) sGen <$> eDrawn
+    ]
 
   pure ()
+

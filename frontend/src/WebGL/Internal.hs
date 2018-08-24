@@ -3,20 +3,17 @@
 {-# LANGUAGE RankNTypes        #-}
 module WebGL.Internal where
 
-import           Control.Lens                        (Lens', (^.), (^?))
+import           Control.Lens                        (Getter, to, Lens', (^.), (^?))
 import           Control.Monad                       (unless, void)
 import           Control.Monad.Except                (throwError)
 
 import           Data.Bool                           (bool)
-import           Data.Foldable                       (foldMap,
-                                                      toList)
+import           Data.Foldable                       (foldMap, toList)
 import           Data.Maybe                          (fromMaybe)
-import           Data.Semigroup                      (mconcat, (<>))
 import           Data.Text                           (Text)
 import           GHC.Word                            (Word16, Word8)
 
 import           Linear.Matrix                       (M44, transpose)
-import           Linear.V4                           (V4 (..))
 
 import           GHCJS.DOM.Types                     (ArrayBuffer, Float32Array,
                                                       GLenum, GLfloat, GLint,
@@ -34,7 +31,8 @@ import qualified GHCJS.DOM.Types                     as GHCJS
 
 import qualified GHCJS.DOM.WebGLRenderingContextBase as GLB
 
-import           WebGL.Types                         (Error (..), GOL, WebGLM)
+import           WebGL.Types                         (Error (..), FragSrc (..),
+                                                      VertSrc (..), WebGLM)
 
 matToF32Array
   :: MonadJSM m
@@ -47,12 +45,13 @@ matToF32Array =
 
 initShader
   :: GHCJS.GLenum
-  -> Text
+  -> Getter s Text
+  -> s
   -> WebGLRenderingContext
   -> WebGLM WebGLShader
-initShader sType source cx = do
+initShader sType sL source cx = do
   s <- GLB.createShader cx sType
-  GLB.shaderSource cx (Just s) source
+  GLB.shaderSource cx (Just s) (source ^. sL)
   GLB.compileShader cx (Just s)
 
   ok <- GHCJS.liftJSM . GHCJS.fromJSValUnchecked =<<
@@ -65,14 +64,14 @@ initShader sType source cx = do
   pure s
 
 initProgram
-  :: Text
-  -> Text
+  :: VertSrc
+  -> FragSrc
   -> WebGLRenderingContext
   -> WebGLM WebGLProgram
 initProgram vs fs cx = do
   p <- GLB.createProgram cx
-  vs' <- initShader GLB.VERTEX_SHADER vs cx
-  fs' <- initShader GLB.FRAGMENT_SHADER fs cx
+  vs' <- initShader GLB.VERTEX_SHADER (to unVertSrc) vs cx
+  fs' <- initShader GLB.FRAGMENT_SHADER (to unFragSrc) fs cx
   GLB.attachShader cx (Just p) (Just vs')
   GLB.attachShader cx (Just p) (Just fs')
 

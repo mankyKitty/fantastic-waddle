@@ -15,12 +15,22 @@ import           Control.Monad.IO.Class (MonadIO)
 
 import           Data.Text              (Text)
 
-import Linear (V3)
 import           GHCJS.DOM.Types        (Float32Array, GLenum, JSM, MonadJSM,
                                          WebGLBuffer, WebGLFramebuffer,
                                          WebGLProgram, WebGLRenderingContext,
                                          WebGLTexture)
+import           Linear                 (V3)
 import           Reflex.Dom.Core        (Dynamic, Event)
+
+newtype FragSrc = FragSrc
+  { unFragSrc :: Text
+  }
+makeWrapped ''FragSrc
+
+newtype VertSrc = VertSrc
+  { unVertSrc :: Text
+  }
+makeWrapped ''VertSrc
 
 data GOL = GOL
   { _golFrameBufferA :: WebGLFramebuffer
@@ -59,10 +69,7 @@ data CubeInfo t = CubeInfo
   , _cubeInfoTick       :: Dynamic t (Event t ())
   , _cubeInfoToggleAnim :: Event t ()
   , _cubeInfoPost       :: Event t ()
-  , _cubeInfoUpPress    :: Event t (V3 Double -> V3 Double)
-  , _cubeInfoDownPress  :: Event t (V3 Double -> V3 Double)
-  , _cubeInfoRightPress  :: Event t (V3 Double -> V3 Double)
-  , _cubeInfoLeftPress  :: Event t (V3 Double -> V3 Double)
+  , _cubeInfoMovePress  :: Event t (V3 Double -> V3 Double)
   }
 makeClassy ''CubeInfo
 

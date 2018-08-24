@@ -5,10 +5,14 @@ module WebGL.Shaders.GOL
   , golQuadVertSrc
   ) where
 
+import           Control.Lens   (( # ))
+
 import           Data.Text      (Text)
 import qualified Data.Text      as Text
 
 import           Data.Semigroup ((<>))
+
+import           WebGL.Types    (FragSrc (..), VertSrc (..))
 
 setFloatPrecision :: Text
 setFloatPrecision = Text.unlines
@@ -17,16 +21,16 @@ setFloatPrecision = Text.unlines
   , "#endif"
   ]
 
-golQuadVertSrc :: Text
-golQuadVertSrc = setFloatPrecision <> Text.unlines
+golQuadVertSrc :: VertSrc
+golQuadVertSrc = VertSrc $ setFloatPrecision <> Text.unlines
   [ "attribute vec2 quad;"
   , "void main() {"
   , "    gl_Position = vec4(quad, 0, 1.0);"
   , "}"
   ]
 
-golCopyFragSrc :: Text
-golCopyFragSrc = setFloatPrecision <> Text.unlines
+golCopyFragSrc :: FragSrc
+golCopyFragSrc = FragSrc $ setFloatPrecision <> Text.unlines
   [ "uniform sampler2D state;"
   , "uniform vec2 scale;"
   , "void main() {"
@@ -34,8 +38,8 @@ golCopyFragSrc = setFloatPrecision <> Text.unlines
   , "}"
   ]
 
-golFragSrc :: Text
-golFragSrc = setFloatPrecision <> Text.unlines
+golFragSrc :: FragSrc
+golFragSrc = FragSrc $ setFloatPrecision <> Text.unlines
   [ "uniform sampler2D state;"
   , "uniform vec2 scale;"
   , ""

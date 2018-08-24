@@ -47,7 +47,7 @@ file:genEvoArt/tiledLines.png
 * Why Reflex?
   - Functional Reactive Programming
   - Flexible and powerful technique for describing interactions over time
-  - Check the references for some links 
+  - Check the references for some links
   - Come to the workshop tomorrow!!
 ** The basics
    #+ATTR_REVEAL: :frag (roll-in)
@@ -126,7 +126,7 @@ for (var x = 0; x < size; x += step) {
 #+BEGIN_SRC haskell
   Reflex.Dom.Core.requestDomAction :: DomRenderHook t m => Event t (JSM a) -> m (Event t a)
 
-  _ <- requestDomAction $ 
+  _ <- requestDomAction $
     current (drawSteps <$> dCx) <@ ePost
 #+END_SRC
 ** Step input
@@ -147,9 +147,9 @@ foldDyn :: (... t, ... m) => (a -> b -> b) -> b -> Event t a -> m (Dynamic t b)
    #+END_SRC
    #+ATTR_REVEAL: :frag (roll-in)
    #+INCLUDE: "../frontend/src/Canvas2D/TiledLines.hs" :LINES "141-143" src haskell
-** Wiring it in 
+** Wiring it in
    #+BEGIN_SRC haskell
-  _ <- requestDomAction $ 
+  _ <- requestDomAction $
     current (drawSteps <$> dStep <*> dCx) <@ ( ePost <> eStep )
    #+END_SRC
 ** Drawing the lines
@@ -177,6 +177,7 @@ elAttr "rect" ("x" =: "30" <> "y" =: "40" <> "width" =: "100" <> "height" =: "20
      #+ATTR_REVEAL: :frag (roll-in)
      * All the basic shapes: ~rect~, ~path~, ~circle~, ...
      * Their required and some optional properties
+     * A DSL for creating ~path~ properties
      * The ~animate~ element
    - It also provides functions, lenses, and prisms to make your life easier
 ** Thus
@@ -254,13 +255,74 @@ simpleList :: Dynamic t [v] -> (Dynamic t v -> m a) -> m (Dynamic t [a])
    #+INCLUDE: "../frontend/src/SVG/Squares.hs" :LINES "276-285" src haskell
 ** Scale Input
    #+INCLUDE: "../frontend/src/SVG/Squares.hs" :LINES "293-300" src haskell
-** Toggle 
+** Toggle
    #+INCLUDE: "../frontend/src/SVG/Squares.hs" :LINES "301-305" src haskell
-
 * Game of Life - WebGL
 file:genEvoArt/gol.gif
 - Source [[https://nullprogram.com/blog/2014/06/10/][Chris Wellons]]
-** Nothing up my sleeves
-** Orchestration
+** Basic idea
+   Alright, so brace yourself, but what about...
+   #+ATTR_REVEAL: :frag (roll-in)
+   - Conway's 'Game of Life'...
+   - But running in a fragment shader...
+   - On the GPU...
+   - eh?
+   - eh?
+** Shift yaks
+   #+ATTR_REVEAL: :frag (roll-in)
+   - Focus is no longer on drawing actions
+   - Now it is orchestration of actions that draw
+** Basic idea redux
+   #+ATTR_REVEAL: :frag (roll-in)
+   - Initialise two framebuffers
+   - Populate one with random values
+   - Run the fragment shader (which contains the game of life)
+     #+ATTR_REVEAL: :frag (roll-in)
+     - Execute the game of life for each pixel
+     - Render the result to a framebuffer, not the screen
+   - Paint the other framebuffer to the screen
+   - Flip the framebuffers
+   - Repeat
+** Initialising WebGL
+   #+ATTR_REVEAL: :frag (roll-in)
+   - Context
+   - Shaders - needs compiling
+   - Programs - needs linking
+** Don't forget
+   #+ATTR_REVEAL: :frag (grow)
+   - We're
+   - not
+   - writing
+   - javascript.
+** Monad transformers, woo
+   We can have /nicer/ things.
+   #+INCLUDE: "../frontend/src/WebGL/Types.hs" :LINES "80-98" src haskell
+   ~MonadJSM~ ~ ~MonadIO~ when building with GHCJS.
+** Unremarkable code 
+   #+INCLUDE: "../frontend/src/WebGL/Internal.hs" :LINES "46-53" src haskell
+   #+INCLUDE: "../frontend/src/WebGL/Internal.hs" :LINES "66-72" src haskell
+** Code unremarkable
+   Check for errors
+   #+INCLUDE: "../frontend/src/WebGL/Internal.hs" :LINES "57-59" src haskell
+   #+INCLUDE: "../frontend/src/WebGL/Internal.hs" :LINES "80-82" src haskell
+   Lean on our abstractions to handle plumbing
+   #+INCLUDE: "../frontend/src/WebGL/Internal.hs" :LINES "73-78" src haskell
+** Abstraction to ~Event~   
+   Reflex helps out here too:
+   #+BEGIN_SRC haskell
+     fanEither :: ... => Event t (Either a b) -> (Event t a, Event t b)
+   #+END_SRC
+   #+ATTR_REVEAL: :frag (roll-in)
+   #+BEGIN_SRC haskell
+     createGOL :: ... => WebGLRenderingContext -> m (Either Error GOL)
+   #+END_SRC
+   #+ATTR_REVEAL: :frag (roll-in)
+   #+INCLUDE: "../frontend/src/WebGL/GOL.hs" :LINES "234-237" src haskell
+   #+ATTR_REVEAL: :frag (roll-in)
+   #+BEGIN_SRC haskell
+     eError :: Event t Error
+     eGol :: Event t GOL
+   #+END_SRC
+** Fork in the graph
 ** Pew pew photons
-* Game of Life (Spicy) - WebGL
+* Cube of Life (Spicy) - WebGL

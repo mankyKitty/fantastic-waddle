@@ -41,7 +41,7 @@ body sGen = do
       , widgetActivate (tiledLines sGen) "Tiled Lines"
       , widgetActivate (joyDivision sGen) "Joy Division"
       , widgetActivate (gol sGen) "Game Of Life"
-      , widgetActivate (golCube sGen) "Game Of Life (Spicy!)"
+      , widgetActivate (golCube sGen) "Cube Of Life (Spicy!)"
       ]
 
     _ <-

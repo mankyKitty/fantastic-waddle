@@ -4,10 +4,13 @@ module WebGL.Shaders.GOLCube
   , golCubeVertSrc
   ) where
 
+import           Control.Lens   (( # ))
 import           Data.Text      (Text)
 import qualified Data.Text      as Text
 
 import           Data.Semigroup ((<>))
+
+import           WebGL.Types    (FragSrc (..), VertSrc (..))
 
 setFloatPrecision :: Text
 setFloatPrecision = Text.unlines
@@ -16,8 +19,8 @@ setFloatPrecision = Text.unlines
   , "#endif"
   ]
 
-golCubeVertSrc :: Text
-golCubeVertSrc = setFloatPrecision <> Text.unlines
+golCubeVertSrc :: VertSrc
+golCubeVertSrc = VertSrc $ setFloatPrecision <> Text.unlines
   [ "attribute vec4 aVertexPosition;"
   , "attribute vec2 aTextureCoord;"
   , ""
@@ -32,8 +35,8 @@ golCubeVertSrc = setFloatPrecision <> Text.unlines
   , "}"
   ]
 
-golCubeFragSrc :: Text
-golCubeFragSrc = setFloatPrecision <> Text.unlines
+golCubeFragSrc :: FragSrc
+golCubeFragSrc = FragSrc $ setFloatPrecision <> Text.unlines
   [ "uniform sampler2D state;"
   , ""
   , "varying highp vec2 vColour;"

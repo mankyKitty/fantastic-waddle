@@ -53,7 +53,7 @@ import           WebGL.Internal                      as GI
 import qualified WebGL.Shaders.GOLCube               as Shaders
 import           WebGL.Statics                       (cubePositions, indices,
                                                       wrappedTex)
-import           WebGL.Types                         (CubeInfo (CubeInfo),
+import           WebGL.Types                         (CubeInfo (..),
                                                       CubeRotation (..), Error,
                                                       GOL (..), GOLCube (..),
                                                       HasCubeInfo (..),
@@ -176,7 +176,7 @@ initCube = do
 
   dTick <- bool eStep eTick <$$> R.toggle False eToggleAnim
 
-  (_, (canvas, _)) <- RD.elAttr' "div" ("class" =: "canvas-wrapper")
+  (canvas, _) <- RD.divClass "canvas-wrapper"
     $ RD.elAttr' "canvas"
     ( "height" =: tshow (height :: Int) <>
       "width"  =: tshow (width :: Int) <>
@@ -184,7 +184,7 @@ initCube = do
     )
     RD.blank
 
-  dCx <- _canvasInfo_context <$$> C.dContextWebgl (CanvasConfig canvas [])
+  dCx <- _canvasInfo_context <$$> C.dContextWebgl (CanvasConfig canvas mempty)
 
   eForward  <- (L._z -~ 1.0) <$$ B.bsButton_ "Zoom Out" B.Primary
   eBackward <- (L._z +~ 1.0) <$$ B.bsButton_ "Zoom In" B.Primary
@@ -197,83 +197,78 @@ initCube = do
     dTick
     eToggleAnim
     ePost
-    eForward
-    eBackward
-    eRight
-    eLeft
+    $ R.mergeWith (.) [eForward, eBackward, eRight, eLeft]
 
-runGL'
+runGL
   :: ( MonadWidget t m
      , DomRenderHook t m
-     , Traversable g
      )
   => Dynamic t (V3 Double)
-  -> Dynamic t WebGLRenderingContext
-  -> Dynamic t (g GOLCube)
-  -> (WebGLRenderingContext -> GOL -> JSM GOL)
-  -> Event t a
-  -> m (Event t (g GOLCube))
-runGL' dMvVec dCx dMGol f eGo = RD.requestDomAction $
-  R.current (f' <$> dMvVec <*> dCx <*> dMGol) <@ eGo
-  where
-    f' mv cx = traverse (traverseOf golCubeGOL (f cx) >=> golCubeDraw mv cx)
+  -> Dynamic t a
+  -> CubeInfo t
+  -> (V3 Double -> WebGLRenderingContext -> a -> JSM GOLCube)
+  -> Event t ()
+  -> m (Event t GOLCube)
+runGL dMoveVec dGol cI f eGo = RD.requestDomAction $ R.current
+  ( (\m c -> f m c >=> golCubeDraw m c)
+    <$> dMoveVec
+    <*> _cubeInfoCx cI
+    <*> dGol
+  ) <@ eGo
+
+golCubeError
+  :: MonadWidget t m
+  => Error
+  -> m ()
+golCubeError err =
+  RD.divClass "error-wrapper" .
+    RD.divClass "error-text" $
+      RD.text (tshow err)
+
+golCubeRender
+  :: ( MonadWidget t m
+     , DomRenderHook t m
+     )
+  => StdGen
+  -> CubeInfo t
+  -> Dynamic t (V3 Double)
+  -> GOLCube
+  -> m ()
+golCubeRender sGen cI dMoveVec gc = mdo
+  let
+    run'         = runGL dMoveVec dGol cI
+    runTexture f = run' (const (traverseOf golCubeGOL . f))
+
+  dGol <- R.holdDyn gc $ R.leftmost
+    [ eWasReset
+    , eStepRendered
+    , eMoved
+    ]
+
+  eMoved        <- run' golCubeDraw $ () <$ _cubeInfoMovePress cI
+  eWasReset     <- runTexture (GOL.setInitialState sGen) $ _cubeInfoReset cI
+  eStepRendered <- runTexture GOL.stepRenderCopyTexture . R.switchDyn $ _cubeInfoTick cI
+
+  pure ()
 
 golCube :: StdGen -> Widget x ()
 golCube sGen = RD.divClass "gol-cube" $ do
+  let noMove = V3 0 0 0
+
   cI <- initCube
-  let
-    dCx = cI ^. cubeInfoCx
 
-    noMove = V3 0 0 0
-
-    eMoves = [ cI ^. cubeInfoUpPress
-             , cI ^. cubeInfoDownPress
-             , cI ^. cubeInfoRightPress
-             , cI ^. cubeInfoLeftPress
-             ]
-
-  dMvVec <- R.foldDyn ($) noMove $ R.mergeWith (.) eMoves
+  dMvVec <- R.foldDyn ($) noMove $ _cubeInfoMovePress cI
 
   (eError, eGol) <- R.fanEither <$$> RD.requestDomAction $
-    R.current (createGOLCube <$> dCx) <@ (cI ^. cubeInfoPost)
+    R.current (createGOLCube <$> _cubeInfoCx cI) <@ (cI ^. cubeInfoPost)
 
-  eInitialDraw <- RD.requestDomAction $
-    (\c g -> do
-        _ <- GOL.setInitialState sGen c (g ^. golCubeGOL)
-        golCubeDraw noMove c g
-    )
-    <$> R.current dCx
+  eInitialDraw <- RD.requestDomAction $ R.current (
+    (\c -> traverseOf golCubeGOL (GOL.setInitialState sGen c) >=> golCubeDraw noMove c) <$> _cubeInfoCx cI)
     <@> eGol
 
-  let
-    dDraw = pure (\mv cx mgol -> traverse (golCubeDraw mv cx) mgol)
-
-  rec dMGol <- R.holdDyn Nothing $ R.leftmost
-        [ pure <$> eGol
-        , eWasReset
-        , eStepRendered
-        , eMoved
-        ]
-
-      eMoved <- RD.requestDomAction $
-        R.current (dDraw <*> dMvVec <*> dCx <*> dMGol) <@ foldMap (() <$) eMoves
-
-      eWasReset <- runGL' dMvVec dCx dMGol (GOL.setInitialState sGen)
-        $ cI ^. cubeInfoReset
-
-      eStepRendered <- runGL' dMvVec dCx dMGol GOL.stepRenderCopyTexture . R.switchDyn
-        $ cI ^. cubeInfoTick
-
-  dStatus <- R.holdDyn "Game Not Ready" $ R.leftmost
-    [ ("Bugger: " <>) . tshow <$> eError
-    , "Woot!" <$ eGol
+  _ <- RD.widgetHold (RD.text "Nothing Ready Yet") $ R.leftmost
+    [ golCubeError <$> eError
+    , golCubeRender sGen cI dMvVec <$> eInitialDraw
     ]
 
-  dRendered <- R.holdDyn "Nothing Rendered" $
-    ("Rendered!" <$ eInitialDraw) <>
-    ("Stepped!"  <$ eStepRendered)
-
-  RD.display dMvVec
-
-  RD.divClass "status" (RD.dynText dStatus)
-  RD.divClass "rendered" (RD.dynText dRendered)
+  pure ()
