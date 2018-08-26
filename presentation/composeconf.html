@@ -1,0 +1,1095 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>Reflexive Art</title>
+<meta name="author" content="(Sean Chalmers)"/>
+<style type="text/css">
+.underline { text-decoration: underline; }
+</style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/reveal.js/3.0.0/css/reveal.css"/>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/reveal.js/3.0.0/css/theme/moon.css" id="theme"/>
+
+
+<!-- If the query includes 'print-pdf', include the PDF print sheet -->
+<script>
+    if( window.location.search.match( /print-pdf/gi ) ) {
+        var link = document.createElement( 'link' );
+        link.rel = 'stylesheet';
+        link.type = 'text/css';
+        link.href = 'https://cdn.jsdelivr.net/reveal.js/3.0.0/css/print/pdf.css';
+        document.getElementsByTagName( 'head' )[0].appendChild( link );
+    }
+</script>
+<script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+<section id="sec-title-slide"><h1>Reflexive Art</h1><h2>Sean Chalmers</h2><h4>QFPL</h4><h3><a href="mailto:sean.chalmers@data61.csiro.au">sean.chalmers@data61.csiro.au</a></h3>
+</section>
+
+<section>
+<section id="slide-org3148029">
+<h2 id="org3148029">The Goals</h2>
+<ul>
+<li>Introduce Reflex <code>svg</code> and <code>canvas</code> libraries.</li>
+<li>Show Haskell is capable of front-end art &amp; animation.</li>
+<li>Encourage / inspire you to take the plunge!</li>
+
+</ul>
+</section>
+</section>
+<section>
+<section id="slide-org252a3e2">
+<h2 id="org252a3e2">Generative and Evolutionary Art</h2>
+<ul>
+<li class="fragment roll-in">Often emergent</li>
+<li class="fragment roll-in">A fascinating rabbit hole</li>
+
+</ul>
+</section>
+<section id="slide-orgc5e3343">
+<h3 id="orgc5e3343">familiar</h3>
+
+<div class="figure">
+<p><img src="genEvoArt/substrate0014_2018-08-08_11-46-12.jpg" alt="substrate0014_2018-08-08_11-46-12.jpg" />
+</p>
+</div>
+
+<ul>
+<li>Title: <b>Substrate</b></li>
+<li>Source: <a href="http://www.complexification.net/gallery/machines/substrate/index.php">Complexification</a></li>
+
+</ul>
+</section>
+<section id="slide-orgb337319">
+<h3 id="orgb337319">bizarre</h3>
+
+<div class="figure">
+<p><img src="genEvoArt/hairball_mantra_10_1_2018-08-08_11-55-33.jpg" alt="hairball_mantra_10_1_2018-08-08_11-55-33.jpg" width="60%" height="60%" />
+</p>
+</div>
+
+<ul>
+<li>Title: <b>Coloured Trails (Point Advection &amp; Rendering)</b></li>
+<li>Source: <a href="http://www.entagma.com/colored-trails-point-advection-rendering/">Entagma</a></li>
+
+</ul>
+</section>
+<section id="slide-orge1d332a">
+<h3 id="orge1d332a">simple</h3>
+
+<div class="figure">
+<p><img src="genEvoArt/tiledLines.png" alt="tiledLines.png" width="40%" height="40%" style="background-color:white;" />
+</p>
+</div>
+
+<ul>
+<li>Title: <b>Tiled Lines</b></li>
+<li>Image: <a href="https://github.com/mankyKitty/fantastic-waddle">This Presentation</a></li>
+<li>Technique: <a href="https://generativeartistry.com/tutorials/tiled-lines">Generative Artistry</a></li>
+
+</ul>
+</section>
+</section>
+<section>
+<section id="slide-orgef37e3f">
+<h2 id="orgef37e3f">Why Haskell?</h2>
+<ul>
+<li>Cool Types
+<ul>
+<li>Clever Types
+<ul>
+<li>Silly Types
+<ul>
+<li>Types that climb on rocks
+<ul>
+<li>Functions as values
+<ul>
+<li>Lenses
+<ul>
+<li>GHC/GHCJS
+<ul>
+<li><code>traverse</code></li>
+
+</ul></li>
+
+</ul></li>
+
+</ul></li>
+
+</ul></li>
+
+</ul></li>
+
+</ul></li>
+
+</ul></li>
+
+</ul>
+</section>
+</section>
+<section>
+<section id="slide-org79bc5d0">
+<h2 id="org79bc5d0">Why Reflex?</h2>
+<ul>
+<li>Functional Reactive Programming</li>
+<li>Flexible and powerful technique for describing interactions over time</li>
+<li>Check the references for some links</li>
+<li>Come to the workshop tomorrow!!</li>
+
+</ul>
+</section>
+<section id="slide-orgf6242fa">
+<h3 id="orgf6242fa">The basics</h3>
+<ul>
+<li class="fragment roll-in"><code>Event</code> : a value at <b>a point</b> in time.</li>
+<li class="fragment roll-in"><code>Behaviour</code> : a value at <b>all points</b> in time.</li>
+<li class="fragment roll-in"><code>Dynamic</code> : Combination of an <code>Event</code> and a <code>Behaviour</code>.
+<ul>
+<li>Unique to Reflex.</li>
+
+</ul></li>
+<li class="fragment roll-in">Functions for creating the above</li>
+<li class="fragment roll-in">Lean heavily on existing abstractions:
+<ul>
+<li><code>Functor</code>, <code>Applicative</code>, <code>Monad</code>, and friends.</li>
+
+</ul></li>
+
+</ul>
+</section>
+</section>
+<section>
+<section id="slide-orge2ed820">
+<h2 id="orge2ed820">Tiled Lines - Canvas</h2>
+
+<div class="figure">
+<p><img src="genEvoArt/tiledLines.png" alt="tiledLines.png" width="40%" height="40%" style="background-color:white;" />
+</p>
+</div>
+</section>
+<section id="slide-orge5e676f">
+<h3 id="orge5e676f">Basic Idea</h3>
+<ul>
+<li class="fragment roll-in">Draw a line of predetermined length</li>
+<li class="fragment roll-in">Decide to turn 90\(^{\circ}\) left or right</li>
+<li class="fragment roll-in">Draw a line of predetermined length</li>
+<li class="fragment roll-in">Repeat \({(size/step)^2}\) times</li>
+
+</ul>
+</section>
+<section id="slide-org9ffedc4">
+<h3 id="org9ffedc4">Draw a line</h3>
+<ul>
+<li class="fragment roll-in"><p>
+JavaScript
+</p>
+<div class="org-src-container">
+
+<pre  class="src src-javascript">context.beginPath<span style="color: #AE81FF;">()</span>;
+context.moveTo<span style="color: #AE81FF;">(</span>a,b<span style="color: #AE81FF;">)</span>;
+context.lineTo<span style="color: #AE81FF;">(</span>c,d<span style="color: #AE81FF;">)</span>;
+context.closePath<span style="color: #AE81FF;">()</span>;
+context.stroke<span style="color: #AE81FF;">()</span>;
+</pre>
+</div></li>
+<li class="fragment roll-in">Use <code>ghcjs-dom</code> package for API functions</li>
+<li class="fragment roll-in">No need to write manual FFI calls!</li>
+<li class="fragment roll-in"><p>
+Haskell
+</p>
+<div class="org-src-container">
+
+<pre  class="src src-haskell"><span style="color: #A6E22E;">beginPath</span> context
+<span style="color: #A6E22E;">moveTo</span> context a b
+<span style="color: #A6E22E;">lineTo</span> context c d
+<span style="color: #A6E22E;">closePath</span> context
+<span style="color: #A6E22E;">stroke</span> context
+</pre>
+</div></li>
+
+</ul>
+</section>
+<section id="slide-org4b57150">
+<h3 id="org4b57150">Requesting a Canvas Context</h3>
+<p>
+We need a canvas rendering context:
+</p>
+<ul>
+<li class="fragment roll-in"><p>
+Create your canvas
+</p>
+<div class="org-src-container">
+
+<pre  class="src src-haskell"><span style="color: #AE81FF;">(</span>canvas, <span style="color: #F92672;">_</span><span style="color: #AE81FF;">)</span> <span style="color: #FD971F;">&lt;-</span> RD.divClass <span style="color: #E6DB74;">"canvas-wrapper"</span> <span style="color: #FD971F;">$</span>
+  RD.elAttr' <span style="color: #E6DB74;">"canvas"</span> canvasAttrs RD.blank
+</pre>
+</div></li>
+<li class="fragment roll-in"><p>
+Ask <code>reflex-dom-canvas</code> for a 2d drawing context
+</p>
+<div class="org-src-container">
+
+<pre  class="src src-haskell"><span style="color: #A6E22E;">dContext2d</span> <span style="color: #FD971F;">::</span> <span style="color: #FD971F;">...</span> <span style="color: #FD971F;">=&gt;</span> <span style="color: #66D9EF;">CanvasConfig</span> '<span style="color: #66D9EF;">TwoD</span> t <span style="color: #FD971F;">-&gt;</span> m <span style="color: #AE81FF;">(</span><span style="color: #66D9EF;">Dynamic</span> t <span style="color: #66D9EF;">(</span><span style="color: #66D9EF;">CanvasInfo</span> '<span style="color: #66D9EF;">TwoD</span> t<span style="color: #66D9EF;">)</span><span style="color: #AE81FF;">)</span>
+</pre>
+</div>
+<div class="org-src-container">
+
+<pre  class="src src-haskell">C<span style="color: #A6E22E;">.</span>dContext2d <span style="color: #AE81FF;">(</span><span style="color: #66D9EF;">CTypes.CanvasConfig</span> canvas mempty<span style="color: #AE81FF;">)</span>
+</pre>
+</div></li>
+<li class="fragment roll-in"><p>
+Yay!
+</p>
+<div class="org-src-container">
+
+<pre  class="src src-haskell"><span style="color: #F92672;">data</span> <span style="color: #66D9EF;">CanvasInfo</span> <span style="color: #AE81FF;">(</span>c <span style="color: #FD971F;">::</span> <span style="color: #66D9EF;">ContextType</span><span style="color: #AE81FF;">)</span> t <span style="color: #FD971F;">=</span> <span style="color: #66D9EF;">CanvasInfo</span>
+  <span style="color: #AE81FF;">{</span> _canvasInfo_El      <span style="color: #FD971F;">::</span> <span style="color: #66D9EF;">RD.El</span> t
+  , _canvasInfo_context <span style="color: #FD971F;">::</span> <span style="color: #66D9EF;">RenderContext</span> c
+  <span style="color: #FD971F;">...</span>
+</pre>
+</div></li>
+
+</ul>
+</section>
+<section id="slide-orgff355b6">
+<h3 id="orgff355b6">random Have i ? can</h3>
+<p>
+Decide to turn left or right&#x2026;
+</p>
+<div class="org-src-container">
+
+<pre  class="fragment (roll-in)"><span style="color: #F92672;">data</span> <span style="color: #66D9EF;">LR</span>
+  <span style="color: #FD971F;">=</span> <span style="color: #66D9EF;">LeftToRight</span>
+  <span style="color: #FD971F;">|</span> <span style="color: #66D9EF;">RightToLeft</span>
+  <span style="color: #F92672;">deriving</span> <span style="color: #AE81FF;">(</span><span style="color: #66D9EF;">Show</span>, <span style="color: #66D9EF;">Eq</span><span style="color: #AE81FF;">)</span>
+</pre>
+</div>
+<div class="org-src-container">
+
+<pre  class="fragment (roll-in)"><span style="color: #A6E22E;">ltor1</span> <span style="color: #FD971F;">::</span> <span style="color: #66D9EF;">IO</span> <span style="color: #66D9EF;">LR</span>
+<span style="color: #A6E22E;">ltor1</span> <span style="color: #FD971F;">=</span> MRnd.uniform <span style="color: #AE81FF;">[</span><span style="color: #66D9EF;">RightToLeft</span>, <span style="color: #66D9EF;">LeftToRight</span><span style="color: #AE81FF;">]</span>
+
+<span style="color: #A6E22E;">ltor2</span> <span style="color: #FD971F;">::</span> <span style="color: #66D9EF;">Rnd.StdGen</span> <span style="color: #FD971F;">-&gt;</span> <span style="color: #AE81FF;">(</span><span style="color: #66D9EF;">LR</span>, <span style="color: #66D9EF;">Rnd.StdGen</span><span style="color: #AE81FF;">)</span>
+<span style="color: #A6E22E;">ltor2</span> <span style="color: #FD971F;">=</span> first <span style="color: #AE81FF;">(</span>bool <span style="color: #66D9EF;">RightToLeft</span> <span style="color: #66D9EF;">LeftToRight</span> <span style="color: #FD971F;">.</span> <span style="color: #66D9EF;">(</span><span style="color: #FD971F;">&gt;=</span> <span style="color: #AE81FF;">0.5</span><span style="color: #66D9EF;">)</span><span style="color: #AE81FF;">)</span>
+  <span style="color: #FD971F;">.</span> Rnd.randomR <span style="color: #AE81FF;">(</span><span style="color: #AE81FF;">0</span><span style="color: #FD971F;">::</span><span style="color: #66D9EF;">Double</span>,<span style="color: #AE81FF;">1.0</span><span style="color: #AE81FF;">)</span>
+
+<span style="color: #A6E22E;">ltor3</span> <span style="color: #FD971F;">::</span> <span style="color: #66D9EF;">MonadIO</span> m <span style="color: #FD971F;">=&gt;</span> m <span style="color: #66D9EF;">LR</span>
+<span style="color: #A6E22E;">ltor3</span> <span style="color: #FD971F;">=</span> bool <span style="color: #66D9EF;">RightToLeft</span> <span style="color: #66D9EF;">LeftToRight</span> <span style="color: #FD971F;">.</span> <span style="color: #AE81FF;">(</span><span style="color: #FD971F;">&gt;=</span> <span style="color: #66D9EF;">(</span><span style="color: #AE81FF;">0.5</span><span style="color: #FD971F;">::</span><span style="color: #66D9EF;">Double</span><span style="color: #66D9EF;">)</span><span style="color: #AE81FF;">)</span>
+  <span style="color: #FD971F;">&lt;$&gt;</span> liftIO <span style="color: #AE81FF;">(</span>Rnd.randomRIO <span style="color: #66D9EF;">(</span><span style="color: #AE81FF;">0</span><span style="color: #FD971F;">::</span><span style="color: #66D9EF;">Double</span>,<span style="color: #AE81FF;">1.0</span><span style="color: #66D9EF;">)</span><span style="color: #AE81FF;">)</span>
+</pre>
+</div>
+</section>
+<section id="slide-org98eba06">
+<h3 id="org98eba06">Glorious loops</h3>
+<p>
+Repeat, lots.
+</p>
+<ul>
+<li class="fragment roll-in"><p>
+imperative, mutable
+</p>
+<div class="org-src-container">
+
+<pre  class="src src-javascript"><span style="color: #F92672;">for</span> <span style="color: #AE81FF;">(</span><span style="color: #F92672;">var</span> <span style="color: #FD971F;">x</span> = <span style="color: #AE81FF;">0</span>; x &lt; size; x += step<span style="color: #AE81FF;">)</span> <span style="color: #AE81FF;">{</span>
+  <span style="color: #F92672;">for</span> <span style="color: #66D9EF;">(</span><span style="color: #F92672;">var</span> <span style="color: #FD971F;">y</span> = <span style="color: #AE81FF;">0</span>; y &lt; size; y += step<span style="color: #66D9EF;">)</span> <span style="color: #66D9EF;">{</span>
+  <span style="color: #66D9EF;">}</span>
+<span style="color: #AE81FF;">}</span>
+</pre>
+</div></li>
+<li class="fragment roll-in"><p>
+functional, immutable
+</p>
+<div class="org-src-container">
+
+<pre  class="src src-haskell"><span style="color: #F92672;">let</span> xy <span style="color: #FD971F;">=</span> <span style="color: #AE81FF;">[</span><span style="color: #AE81FF;">0</span>,stp <span style="color: #FD971F;">..</span> size<span style="color: #AE81FF;">]</span>
+
+<span style="color: #A6E22E;">forM_</span> xy <span style="color: #FD971F;">$</span> <span style="color: #FD971F;">\</span>x <span style="color: #FD971F;">-&gt;</span>
+  forM_ xy <span style="color: #FD971F;">$</span> <span style="color: #FD971F;">\</span>y <span style="color: #FD971F;">-&gt;</span>
+</pre>
+</div></li>
+
+</ul>
+</section>
+<section id="slide-org2cdd87f">
+<h3 id="org2cdd87f">Glorious lines</h3>
+<div class="org-src-container">
+
+<pre  class="src src-haskell"><span style="color: #A6E22E;">requestDomAction</span> <span style="color: #FD971F;">::</span> <span style="color: #66D9EF;">DomRenderHook</span> t m <span style="color: #FD971F;">=&gt;</span> <span style="color: #66D9EF;">Event</span> t <span style="color: #AE81FF;">(</span><span style="color: #66D9EF;">JSM</span> a<span style="color: #AE81FF;">)</span> <span style="color: #FD971F;">-&gt;</span> m <span style="color: #AE81FF;">(</span><span style="color: #66D9EF;">Event</span> t a<span style="color: #AE81FF;">)</span>
+
+<span style="color: #F92672;">_</span> <span style="color: #FD971F;">&lt;-</span> requestDomAction <span style="color: #FD971F;">$</span>
+  current <span style="color: #AE81FF;">(</span>drawSteps <span style="color: #FD971F;">&lt;$&gt;</span> dCx<span style="color: #AE81FF;">)</span> <span style="color: #FD971F;">&lt;@</span> ePost
+</pre>
+</div>
+</section>
+<section id="slide-orga45bde8">
+<h3 id="orga45bde8">Step input</h3>
+<p>
+Create a text input for our step size
+</p>
+<div class="org-src-container">
+
+<pre  class="src src-haskell">dStepSize <span style="color: #FD971F;">&lt;-</span> RD._textInput_value
+  <span style="color: #FD971F;">&lt;$&gt;</span> B.bsNumberInput <span style="color: #E6DB74;">"Step Size"</span> <span style="color: #E6DB74;">"step-size"</span> defStepSize
+</pre>
+</div>
+</section>
+<section id="slide-org38d4a06">
+<h3 id="org38d4a06">Step bump</h3>
+<p>
+Add some buttons
+</p>
+<div class="org-src-container">
+
+<pre  class="src src-haskell">eInc <span style="color: #FD971F;">&lt;-</span> B.bsButton_ <span style="color: #E6DB74;">"+ Step"</span> <span style="color: #66D9EF;">B.Primary</span>
+eDec <span style="color: #FD971F;">&lt;-</span> B.bsButton_ <span style="color: #E6DB74;">"- Step"</span> <span style="color: #66D9EF;">B.Primary</span>
+</pre>
+</div>
+<div class="org-src-container">
+
+<pre  class="src src-haskell"><span style="color: #A6E22E;">eInc, eDec</span> <span style="color: #FD971F;">::</span> <span style="color: #66D9EF;">Event</span> t <span style="color: #AE81FF;">()</span>
+</pre>
+</div>
+</section>
+<section id="slide-orgbd1f762">
+<h3 id="orgbd1f762">Step state</h3>
+<p>
+Keep track of the step size as it changes over time.
+</p>
+<div class="org-src-container">
+
+<pre  class="src src-haskell">dStep <span style="color: #FD971F;">&lt;-</span> R.foldDyn <span style="color: #AE81FF;">(</span><span style="color: #FD971F;">$</span><span style="color: #AE81FF;">)</span> step <span style="color: #FD971F;">$</span> R.mergeWith <span style="color: #AE81FF;">(</span><span style="color: #FD971F;">.</span><span style="color: #AE81FF;">)</span>
+  <span style="color: #AE81FF;">[</span> incSize <span style="color: #FD971F;">&lt;$&gt;</span> eStepSize eInc
+  , decSize <span style="color: #FD971F;">&lt;$&gt;</span> eStepSize eDec
+  <span style="color: #AE81FF;">]</span>
+</pre>
+</div>
+<div class="org-src-container">
+
+<pre  class="fragment (roll-in)"><span style="color: #A6E22E;">foldDyn</span> <span style="color: #FD971F;">::</span> <span style="color: #AE81FF;">(</span><span style="color: #FD971F;">...</span> t, <span style="color: #FD971F;">...</span> m<span style="color: #AE81FF;">)</span> <span style="color: #FD971F;">=&gt;</span> <span style="color: #AE81FF;">(</span>a <span style="color: #FD971F;">-&gt;</span> b <span style="color: #FD971F;">-&gt;</span> b<span style="color: #AE81FF;">)</span> <span style="color: #FD971F;">-&gt;</span> b <span style="color: #FD971F;">-&gt;</span> <span style="color: #66D9EF;">Event</span> t a <span style="color: #FD971F;">-&gt;</span> m <span style="color: #AE81FF;">(</span><span style="color: #66D9EF;">Dynamic</span> t b<span style="color: #AE81FF;">)</span>
+</pre>
+</div>
+<div class="org-src-container">
+
+<pre  class="fragment (roll-in)"><span style="color: #A6E22E;">eStepSize</span> eTrigger <span style="color: #FD971F;">=</span>
+  R.fmapMaybe <span style="color: #AE81FF;">(</span>readMaybe <span style="color: #FD971F;">.</span> Text.unpack<span style="color: #AE81FF;">)</span> <span style="color: #FD971F;">$</span> R.current dStepSize <span style="color: #FD971F;">&lt;@</span> eTrigger
+</pre>
+</div>
+</section>
+<section id="slide-orgfe5ee77">
+<h3 id="orgfe5ee77">Wiring it in</h3>
+<div class="org-src-container">
+
+<pre  class="src src-haskell"><span style="color: #F92672;">_</span> <span style="color: #FD971F;">&lt;-</span> requestDomAction <span style="color: #FD971F;">$</span>
+  current <span style="color: #AE81FF;">(</span>drawSteps <span style="color: #FD971F;">&lt;$&gt;</span> dStep <span style="color: #FD971F;">&lt;*&gt;</span> dCx<span style="color: #AE81FF;">)</span> <span style="color: #FD971F;">&lt;@</span> <span style="color: #AE81FF;">(</span> ePost <span style="color: #FD971F;">&lt;&gt;</span> eStep <span style="color: #AE81FF;">)</span>
+</pre>
+</div>
+</section>
+<section id="slide-org9392206">
+<h3 id="org9392206">Drawing the lines</h3>
+<div class="org-src-container">
+
+<pre  class="src src-haskell"><span style="color: #A6E22E;">drawSteps</span> stp cap cx <span style="color: #FD971F;">=</span> <span style="color: #F92672;">do</span>
+  DOM_CR.clearRect cx <span style="color: #AE81FF;">0</span> <span style="color: #AE81FF;">0</span> <span style="color: #AE81FF;">(</span>fromIntegral size<span style="color: #AE81FF;">)</span> <span style="color: #AE81FF;">(</span>fromIntegral size<span style="color: #AE81FF;">)</span>
+  DOM_CR.beginPath cx
+
+  <span style="color: #F92672;">let</span> xy <span style="color: #FD971F;">=</span> <span style="color: #AE81FF;">[</span><span style="color: #AE81FF;">0</span>,stp <span style="color: #FD971F;">..</span> size<span style="color: #AE81FF;">]</span>
+
+  forM_ xy <span style="color: #FD971F;">$</span> <span style="color: #FD971F;">\</span>x <span style="color: #FD971F;">-&gt;</span>
+    forM_ xy <span style="color: #FD971F;">$</span> <span style="color: #FD971F;">\</span>y <span style="color: #FD971F;">-&gt;</span>
+      draw x y stp cap cx
+
+  DOM_CR.stroke cx
+</pre>
+</div>
+</section>
+</section>
+<section>
+<section id="slide-org6b27a42">
+<h2 id="org6b27a42">Squares - SVG</h2>
+
+<div class="figure">
+<p><img src="Squares%20-%20SVG/final_colored_grid_2018-08-20_13-11-31.png" alt="final_colored_grid_2018-08-20_13-11-31.png" width="40%" height="40%" />
+</p>
+</div>
+<ul>
+<li>Source: <a href="https://www.kovach.me/posts/2018-03-07-generating-art.html">Benjamin Kovach</a></li>
+
+</ul>
+</section>
+<section id="slide-org2ec749c">
+<h3 id="org2ec749c">Basic Idea</h3>
+<ul>
+<li class="fragment roll-in">Randomly place a bunch of squares such that none intersect</li>
+<li class="fragment roll-in">Randomly apply colouring and fill to each square</li>
+<li class="fragment roll-in">Apply perlin noise to the corners of the squares</li>
+
+</ul>
+</section>
+<section id="slide-org86ac776">
+<h3 id="org86ac776">Ewww, strings</h3>
+<ul>
+<li class="fragment roll-in"><p>
+Using custom elements in <code>reflex-dom</code> is stringly
+</p>
+<div class="org-src-container">
+
+<pre  class="src src-haskell"><span style="color: #A6E22E;">elAttr</span> <span style="color: #E6DB74;">"rect"</span> <span style="color: #AE81FF;">(</span><span style="color: #E6DB74;">"x"</span> <span style="color: #FD971F;">=:</span> <span style="color: #E6DB74;">"30"</span> <span style="color: #FD971F;">&lt;&gt;</span> <span style="color: #E6DB74;">"y"</span> <span style="color: #FD971F;">=:</span> <span style="color: #E6DB74;">"40"</span> <span style="color: #FD971F;">&lt;&gt;</span> <span style="color: #E6DB74;">"width"</span> <span style="color: #FD971F;">=:</span> <span style="color: #E6DB74;">"100"</span> <span style="color: #FD971F;">&lt;&gt;</span> <span style="color: #E6DB74;">"height"</span> <span style="color: #FD971F;">=:</span> <span style="color: #E6DB74;">"200"</span><span style="color: #AE81FF;">)</span> blank
+</pre>
+</div></li>
+<li class="fragment roll-in">The element tag and properties must be given as <code>Text</code> values</li>
+<li class="fragment roll-in">Typos abound!</li>
+
+</ul>
+</section>
+<section id="slide-orgfde6317">
+<h3 id="orgfde6317">Introducing <code>reflex-dom-svg</code></h3>
+<ul>
+<li class="fragment roll-in">This package provides data types for:
+<ul>
+<li class="fragment roll-in">All the basic shapes: <code>rect</code>, <code>path</code>, <code>circle</code>, &#x2026;</li>
+<li class="fragment roll-in">Their required and some optional properties</li>
+<li class="fragment roll-in">A DSL for creating <code>path</code> properties</li>
+<li class="fragment roll-in">The <code>animate</code> element</li>
+
+</ul></li>
+<li class="fragment roll-in">It also provides functions, lenses, and prisms to make your life easier</li>
+
+</ul>
+</section>
+<section id="slide-orgf523f70">
+<h3 id="orgf523f70">Thus</h3>
+<ul>
+<li class="fragment roll-in"><p>
+What was sad
+</p>
+<div class="org-src-container">
+
+<pre  class="src src-haskell"><span style="color: #FD971F;">...</span> <span style="color: #E6DB74;">"rect"</span> <span style="color: #AE81FF;">(</span><span style="color: #E6DB74;">"x"</span> <span style="color: #FD971F;">=:</span> <span style="color: #E6DB74;">"30"</span> <span style="color: #FD971F;">&lt;&gt;</span> <span style="color: #E6DB74;">"y"</span> <span style="color: #FD971F;">=:</span> <span style="color: #E6DB74;">"40"</span> <span style="color: #FD971F;">&lt;&gt;</span> <span style="color: #E6DB74;">"width"</span> <span style="color: #FD971F;">=:</span> <span style="color: #E6DB74;">"100"</span> <span style="color: #FD971F;">&lt;&gt;</span> <span style="color: #E6DB74;">"height"</span> <span style="color: #FD971F;">=:</span> <span style="color: #E6DB74;">"200"</span><span style="color: #AE81FF;">)</span>
+</pre>
+</div></li>
+<li class="fragment roll-in"><p>
+Becomes happy
+</p>
+<div class="org-src-container">
+
+<pre  class="src src-haskell"><span style="color: #F92672;">data</span> <span style="color: #66D9EF;">SVG_Rect</span> <span style="color: #FD971F;">=</span> <span style="color: #66D9EF;">SVG_Rect</span>
+  <span style="color: #AE81FF;">{</span> _svg_rect_pos_x          <span style="color: #FD971F;">::</span> <span style="color: #66D9EF;">Pos</span> <span style="color: #66D9EF;">X</span>
+  , _svg_rect_pos_y          <span style="color: #FD971F;">::</span> <span style="color: #66D9EF;">Pos</span> <span style="color: #66D9EF;">Y</span>
+  , _svg_rect_width          <span style="color: #FD971F;">::</span> <span style="color: #66D9EF;">Width</span>
+  , _svg_rect_height         <span style="color: #FD971F;">::</span> <span style="color: #66D9EF;">Height</span>
+  , _svg_rect_cornerRadius_x <span style="color: #FD971F;">::</span> <span style="color: #66D9EF;">Maybe</span> <span style="color: #66D9EF;">(</span><span style="color: #66D9EF;">CornerRadius</span> <span style="color: #66D9EF;">X</span><span style="color: #66D9EF;">)</span>
+  , _svg_rect_cornerRadius_y <span style="color: #FD971F;">::</span> <span style="color: #66D9EF;">Maybe</span> <span style="color: #66D9EF;">(</span><span style="color: #66D9EF;">CornerRadius</span> <span style="color: #66D9EF;">Y</span><span style="color: #66D9EF;">)</span>
+  <span style="color: #AE81FF;">}</span>
+</pre>
+</div></li>
+
+</ul>
+</section>
+<section id="slide-orgf6d1059">
+<h3 id="orgf6d1059">Put the G in SVG</h3>
+<ul>
+<li class="fragment roll-in"><p>
+To put a basic shape on the page
+</p>
+<div class="org-src-container">
+
+<pre  class="src src-haskell"><span style="color: #75715E;">-- </span><span style="color: #75715E;">No child elements</span>
+<span style="color: #A6E22E;">svgBasicDyn_</span> <span style="color: #FD971F;">::</span> s <span style="color: #FD971F;">-&gt;</span> <span style="color: #AE81FF;">(</span>p <span style="color: #FD971F;">-&gt;</span> <span style="color: #66D9EF;">Map</span> <span style="color: #66D9EF;">Text</span> <span style="color: #66D9EF;">Text</span><span style="color: #AE81FF;">)</span> <span style="color: #FD971F;">-&gt;</span> <span style="color: #66D9EF;">Dynamic</span> t p <span style="color: #FD971F;">-&gt;</span> m <span style="color: #AE81FF;">(</span><span style="color: #66D9EF;">SVGEl</span> t s<span style="color: #AE81FF;">)</span>
+
+<span style="color: #75715E;">-- </span><span style="color: #75715E;">Only allow a subset of SVG elements as possible child elements</span>
+<span style="color: #A6E22E;">svgBasicDyn</span>  <span style="color: #FD971F;">::</span> s <span style="color: #FD971F;">-&gt;</span> <span style="color: #AE81FF;">(</span>p <span style="color: #FD971F;">-&gt;</span> <span style="color: #66D9EF;">Map</span> <span style="color: #66D9EF;">Text</span> <span style="color: #66D9EF;">Text</span><span style="color: #AE81FF;">)</span> <span style="color: #FD971F;">-&gt;</span> <span style="color: #66D9EF;">Dynamic</span> t p
+  <span style="color: #FD971F;">-&gt;</span> <span style="color: #66D9EF;">Dynamic</span> t <span style="color: #AE81FF;">(</span><span style="color: #66D9EF;">Map</span> <span style="color: #66D9EF;">(</span><span style="color: #66D9EF;">CanBeNested</span> s<span style="color: #66D9EF;">)</span> <span style="color: #66D9EF;">(</span><span style="color: #66D9EF;">Map</span> <span style="color: #66D9EF;">Text</span> <span style="color: #66D9EF;">Text</span><span style="color: #66D9EF;">)</span><span style="color: #AE81FF;">)</span>
+  <span style="color: #FD971F;">-&gt;</span> m <span style="color: #AE81FF;">(</span><span style="color: #66D9EF;">SVGEl</span> t s<span style="color: #AE81FF;">)</span>
+</pre>
+</div></li>
+<li class="fragment roll-in"><p>
+Looks like
+</p>
+<div class="org-src-container">
+
+<pre  class="src src-haskell">SVG<span style="color: #A6E22E;">.</span>svgBasicDyn_
+  <span style="color: #66D9EF;">SVG.Rect</span>          <span style="color: #75715E;">-- </span><span style="color: #75715E;">Indicate we want a '&lt;rect&gt;' element</span>
+  SVG.makeRectProps <span style="color: #75715E;">-- </span><span style="color: #75715E;">Use the library provided function for handling properties</span>
+  dMyRectProps      <span style="color: #75715E;">-- </span><span style="color: #75715E;">Provide a Dynamic of our SVG_Rect</span>
+</pre>
+</div></li>
+
+</ul>
+</section>
+<section id="slide-org869dafa">
+<h3 id="org869dafa">Data structures for great justice</h3>
+<ul>
+<li class="fragment roll-in"><p>
+We will use a <code>polygon</code> for our squares
+</p>
+<div class="org-src-container">
+
+<pre  class="src src-haskell"><span style="color: #F92672;">data</span> <span style="color: #66D9EF;">SVG_Polygon</span> <span style="color: #FD971F;">=</span> <span style="color: #66D9EF;">SVG_Polygon</span>
+  <span style="color: #AE81FF;">{</span> _svg_polygon_start <span style="color: #FD971F;">::</span> <span style="color: #66D9EF;">(</span><span style="color: #66D9EF;">Pos</span> <span style="color: #66D9EF;">X</span>, <span style="color: #66D9EF;">Pos</span> <span style="color: #66D9EF;">Y</span><span style="color: #66D9EF;">)</span>
+  , _svg_polygon_path  <span style="color: #FD971F;">::</span> <span style="color: #66D9EF;">NonEmpty</span> <span style="color: #66D9EF;">(</span><span style="color: #66D9EF;">Pos</span> <span style="color: #66D9EF;">X</span>, <span style="color: #66D9EF;">Pos</span> <span style="color: #66D9EF;">Y</span><span style="color: #66D9EF;">)</span>
+  <span style="color: #AE81FF;">}</span>
+</pre>
+</div></li>
+<li class="fragment roll-in">We benefit from all the delicious <i>existing</i> abstractions
+<ul>
+<li><code>Functor</code>, <code>Applicative</code>, <code>Traversable</code></li>
+
+</ul></li>
+<li class="fragment roll-in">Apply the perlin noise function to every point in a polygon
+<ul>
+<li class="fragment roll-in"><p>
+Given
+</p>
+<div class="org-src-container">
+
+<pre  class="src src-haskell"><span style="color: #F92672;">newtype</span> <span style="color: #66D9EF;">Poly</span> <span style="color: #FD971F;">=</span> <span style="color: #66D9EF;">Poly</span>
+  <span style="color: #AE81FF;">{</span> unPoly <span style="color: #FD971F;">::</span> <span style="color: #66D9EF;">(</span><span style="color: #66D9EF;">PolyAttrs</span>, <span style="color: #66D9EF;">SVG_Polygon</span><span style="color: #66D9EF;">)</span> <span style="color: #AE81FF;">}</span>
+  <span style="color: #F92672;">deriving</span> <span style="color: #AE81FF;">(</span><span style="color: #66D9EF;">Eq</span>,<span style="color: #66D9EF;">Show</span><span style="color: #AE81FF;">)</span>
+<span style="color: #A6E22E;">makeWrapped</span> ''<span style="color: #66D9EF;">Poly</span>
+</pre>
+</div></li>
+<li class="fragment roll-in"><p>
+We can lens &amp; <code>traverse</code> our way to victory!
+</p>
+<div class="org-src-container">
+
+<pre  class="src src-haskell"><span style="color: #A6E22E;">over</span> <span style="color: #AE81FF;">(</span>_Wrapped <span style="color: #FD971F;">.</span> _2<span style="color: #AE81FF;">)</span> <span style="color: #AE81FF;">(</span>
+  <span style="color: #66D9EF;">(</span>SVGT.svg_polygon_start <span style="color: #FD971F;">%~</span> addNoise seed scale<span style="color: #66D9EF;">)</span>
+<span style="color: #FD971F;">.</span> <span style="color: #66D9EF;">(</span>SVGT.svg_polygon_path <span style="color: #FD971F;">.</span> traverse <span style="color: #FD971F;">%~</span> addNoise seed scale<span style="color: #66D9EF;">)</span>
+<span style="color: #AE81FF;">)</span>
+</pre>
+</div></li>
+
+</ul></li>
+
+</ul>
+</section>
+<section id="slide-orgaf161db">
+<h3 id="orgaf161db">Gift keeps giving</h3>
+<ul>
+<li class="fragment roll-in"><p>
+<code>reflex</code> provides additional functionality for collections
+</p>
+<div class="org-src-container">
+
+<pre  class="src src-haskell"><span style="color: #A6E22E;">simpleList</span> <span style="color: #FD971F;">::</span> <span style="color: #66D9EF;">Dynamic</span> t <span style="color: #AE81FF;">[</span>v<span style="color: #AE81FF;">]</span> <span style="color: #FD971F;">-&gt;</span> <span style="color: #AE81FF;">(</span><span style="color: #66D9EF;">Dynamic</span> t v <span style="color: #FD971F;">-&gt;</span> m a<span style="color: #AE81FF;">)</span> <span style="color: #FD971F;">-&gt;</span> m <span style="color: #AE81FF;">(</span><span style="color: #66D9EF;">Dynamic</span> t <span style="color: #66D9EF;">[</span>a<span style="color: #66D9EF;">]</span><span style="color: #AE81FF;">)</span>
+</pre>
+</div></li>
+<li class="fragment roll-in"><p>
+So if you have a list of polygons that will change over time&#x2026;
+</p>
+<div class="org-src-container">
+
+<pre  class="src src-haskell"><span style="color: #A6E22E;">dPolys</span> <span style="color: #FD971F;">::</span> <span style="color: #66D9EF;">Dynamic</span> t <span style="color: #AE81FF;">(</span><span style="color: #66D9EF;">NonEmpty</span> <span style="color: #66D9EF;">Poly</span><span style="color: #AE81FF;">)</span>
+<span style="color: #A6E22E;">dPerlin</span> <span style="color: #FD971F;">::</span> <span style="color: #66D9EF;">Dynamic</span> t <span style="color: #AE81FF;">(</span><span style="color: #66D9EF;">Poly</span> <span style="color: #FD971F;">-&gt;</span> <span style="color: #66D9EF;">Poly</span><span style="color: #AE81FF;">)</span>
+</pre>
+</div>
+<div class="org-src-container">
+
+<pre  class="src src-haskell"><span style="color: #75715E;">-- </span><span style="color: #75715E;">Polygons are kept in a 'NonEmpty' list so we always have something to draw</span>
+RD<span style="color: #A6E22E;">.</span>simpleList <span style="color: #AE81FF;">(</span>NE.toList <span style="color: #FD971F;">&lt;$&gt;</span> dPolys<span style="color: #AE81FF;">)</span> <span style="color: #FD971F;">$</span> <span style="color: #FD971F;">\</span>dPoly <span style="color: #FD971F;">-&gt;</span>
+  <span style="color: #75715E;">-- </span><span style="color: #75715E;">Apply the shifting perlin noise function to our polygon</span>
+  SVG.svgBasicDyn_ <span style="color: #66D9EF;">SVG.Polygon</span> makePolyProps <span style="color: #AE81FF;">(</span>dPerlin <span style="color: #FD971F;">&lt;*&gt;</span> dPoly<span style="color: #AE81FF;">)</span>
+</pre>
+</div></li>
+
+</ul>
+</section>
+<section id="slide-org5fb8940">
+<h3 id="org5fb8940">Moving parts</h3>
+<p>
+We have a few things to juggle:
+</p>
+<ul>
+<li class="fragment roll-in">Maximum number of squares to be generated</li>
+<li class="fragment roll-in">Changing 'scale' value for use in the perlin noise function</li>
+<li class="fragment roll-in">Automatic or manual update to element properties</li>
+
+</ul>
+</section>
+<section id="slide-org4eacc3c">
+<h3 id="org4eacc3c">Square Count</h3>
+<div class="org-src-container">
+
+<pre  class="src src-haskell"><span style="color: #F92672;">rec</span> <span style="color: #AE81FF;">(</span>dSqCount, eSqCountChg<span style="color: #AE81FF;">)</span> <span style="color: #FD971F;">&lt;-</span> RD.divClass <span style="color: #E6DB74;">"sqr-inc-dec"</span> <span style="color: #FD971F;">$</span> <span style="color: #F92672;">do</span>
+      eIncSq <span style="color: #FD971F;">&lt;-</span> B.bsButton_ <span style="color: #E6DB74;">"+ Sqr"</span> <span style="color: #66D9EF;">B.Info</span>
+      <span style="color: #F92672;">_</span>      <span style="color: #FD971F;">&lt;-</span> RD.dynText <span style="color: #FD971F;">$</span> <span style="color: #AE81FF;">(</span><span style="color: #FD971F;">&lt;&gt;</span> <span style="color: #E6DB74;">"# Squares"</span><span style="color: #AE81FF;">)</span> <span style="color: #FD971F;">.</span> tshow <span style="color: #FD971F;">.</span> unCount <span style="color: #FD971F;">&lt;$&gt;</span> dSqCount
+      eDecSq <span style="color: #FD971F;">&lt;-</span> B.bsButton_ <span style="color: #E6DB74;">"- Sqr"</span> <span style="color: #66D9EF;">B.Info</span>
+
+      dSqrs <span style="color: #FD971F;">&lt;-</span> RD.foldDyn <span style="color: #AE81FF;">(</span><span style="color: #FD971F;">$</span><span style="color: #AE81FF;">)</span> sqCount <span style="color: #FD971F;">$</span> RD.mergeWith <span style="color: #AE81FF;">(</span><span style="color: #FD971F;">.</span><span style="color: #AE81FF;">)</span>
+        <span style="color: #AE81FF;">[</span> incSqCount <span style="color: #FD971F;">&lt;$</span> eIncSq
+        , decSqCount <span style="color: #FD971F;">&lt;$</span> eDecSq
+        <span style="color: #AE81FF;">]</span>
+</pre>
+</div>
+</section>
+<section id="slide-org4f860a6">
+<h3 id="org4f860a6">Scale Input</h3>
+<div class="org-src-container">
+
+<pre  class="src src-haskell">dScaleInp <span style="color: #FD971F;">&lt;-</span> RD.divClass <span style="color: #E6DB74;">"scale-slider"</span> <span style="color: #FD971F;">$</span> <span style="color: #F92672;">do</span>
+  RD.text <span style="color: #E6DB74;">"Scale"</span>
+  fmap <span style="color: #AE81FF;">(</span>fmap realToFrac <span style="color: #FD971F;">.</span> RD._rangeInput_value<span style="color: #AE81FF;">)</span> <span style="color: #FD971F;">.</span> RD.rangeInput <span style="color: #FD971F;">$</span> B.rangeInpConf <span style="color: #AE81FF;">0.0</span> <span style="color: #E6DB74;">"scale"</span>
+    <span style="color: #FD971F;">&amp;</span> RD.rangeInputConfig_attributes <span style="color: #FD971F;">.</span> mapped <span style="color: #FD971F;">%~</span> <span style="color: #FD971F;">\</span>m <span style="color: #FD971F;">-&gt;</span> m
+        <span style="color: #FD971F;">&amp;</span> at <span style="color: #E6DB74;">"step"</span> <span style="color: #FD971F;">?~</span> <span style="color: #E6DB74;">"0.0001"</span>
+        <span style="color: #FD971F;">&amp;</span> at <span style="color: #E6DB74;">"min"</span> <span style="color: #FD971F;">?~</span> <span style="color: #E6DB74;">"0.0"</span>
+        <span style="color: #FD971F;">&amp;</span> at <span style="color: #E6DB74;">"max"</span> <span style="color: #FD971F;">?~</span> <span style="color: #E6DB74;">"0.1"</span>
+</pre>
+</div>
+</section>
+<section id="slide-org759a778">
+<h3 id="org759a778">Toggle</h3>
+<div class="org-src-container">
+
+<pre  class="src src-haskell">dFoofen <span style="color: #FD971F;">&lt;-</span> RD.holdDyn dScaleInp <span style="color: #FD971F;">$</span> RD.leftmost
+  <span style="color: #AE81FF;">[</span> dScaleInp <span style="color: #FD971F;">&lt;$</span> eOnButton
+  , dScaleRange <span style="color: #FD971F;">&lt;$</span> eOnTick
+  <span style="color: #AE81FF;">]</span>
+</pre>
+</div>
+</section>
+</section>
+<section>
+<section id="slide-org63f66f8">
+<h2 id="org63f66f8">Game of Life - WebGL</h2>
+
+<div class="figure">
+<p><img src="genEvoArt/gol.gif" alt="gol.gif" />
+</p>
+</div>
+<ul>
+<li>Source <a href="https://nullprogram.com/blog/2014/06/10/">Chris Wellons</a></li>
+
+</ul>
+</section>
+<section id="slide-orgef12bee">
+<h3 id="orgef12bee">Basic idea</h3>
+<p>
+Alright, so brace yourself, but what about&#x2026;
+</p>
+<ul>
+<li class="fragment roll-in">Conway's 'Game of Life'&#x2026;</li>
+<li class="fragment roll-in">But running in a fragment shader&#x2026;</li>
+<li class="fragment roll-in">On the GPU&#x2026;</li>
+<li class="fragment roll-in">eh?</li>
+<li class="fragment roll-in">eh?</li>
+
+</ul>
+</section>
+<section id="slide-orgbc8d397">
+<h3 id="orgbc8d397">Shift yaks</h3>
+<ul>
+<li class="fragment roll-in">Focus is no longer on drawing actions</li>
+<li class="fragment roll-in">Now it is orchestration of actions that draw</li>
+
+</ul>
+</section>
+<section id="slide-org661ed8d">
+<h3 id="org661ed8d">Basic idea redux</h3>
+<ul>
+<li class="fragment roll-in">Initialise two framebuffers</li>
+<li class="fragment roll-in">Populate one with random values</li>
+<li class="fragment roll-in">Run the fragment shader (which contains the game of life)
+<ul>
+<li class="fragment roll-in">Execute the game of life for each pixel</li>
+<li class="fragment roll-in">Render the result to a framebuffer, not the screen</li>
+
+</ul></li>
+<li class="fragment roll-in">Paint the other framebuffer to the screen</li>
+<li class="fragment roll-in">Flip the framebuffers</li>
+<li class="fragment roll-in">Repeat</li>
+
+</ul>
+</section>
+<section id="slide-orgf92d670">
+<h3 id="orgf92d670">Initialising WebGL</h3>
+<ul>
+<li class="fragment roll-in">Context</li>
+<li class="fragment roll-in">Shaders - needs compiling</li>
+<li class="fragment roll-in">Programs - needs linking</li>
+
+</ul>
+</section>
+<section id="slide-orge93d2e8">
+<h3 id="orge93d2e8">Don't forget</h3>
+<ul>
+<li class="fragment grow">We're</li>
+<li class="fragment grow">not</li>
+<li class="fragment grow">writing</li>
+<li class="fragment grow">javascript.</li>
+
+</ul>
+</section>
+<section id="slide-org12e3a72">
+<h3 id="org12e3a72">Monad transformers, woo</h3>
+<p>
+We can have <i>nicer</i> things.
+</p>
+<div class="org-src-container">
+
+<pre  class="src src-haskell"><span style="color: #F92672;">newtype</span> <span style="color: #66D9EF;">WebGLM</span> a <span style="color: #FD971F;">=</span> <span style="color: #66D9EF;">WebGLM</span>
+  <span style="color: #AE81FF;">{</span> runWebGLM <span style="color: #FD971F;">::</span> <span style="color: #66D9EF;">ExceptT</span> <span style="color: #66D9EF;">Error</span> <span style="color: #66D9EF;">JSM</span> a
+  <span style="color: #AE81FF;">}</span>
+  <span style="color: #F92672;">deriving</span> <span style="color: #AE81FF;">(</span> <span style="color: #66D9EF;">Functor</span>
+           , <span style="color: #66D9EF;">Applicative</span>
+           , <span style="color: #66D9EF;">Monad</span>
+<span style="color: #F92672;">#ifdef ghcjs_HOST_OS</span>
+           , <span style="color: #66D9EF;">MonadIO</span>
+<span style="color: #F92672;">#else</span>
+           , <span style="color: #66D9EF;">MonadIO</span>
+           , <span style="color: #66D9EF;">MonadJSM</span>
+<span style="color: #F92672;">#endif</span>
+           , <span style="color: #66D9EF;">MonadError</span> <span style="color: #66D9EF;">Error</span>
+           <span style="color: #AE81FF;">)</span>
+
+<span style="color: #A6E22E;">liftGLM</span> <span style="color: #FD971F;">::</span> <span style="color: #66D9EF;">Either</span> <span style="color: #66D9EF;">Error</span> a <span style="color: #FD971F;">-&gt;</span> <span style="color: #66D9EF;">WebGLM</span> a
+<span style="color: #A6E22E;">liftGLM</span> <span style="color: #FD971F;">=</span> either throwError pure
+</pre>
+</div>
+<p>
+<i>nb:</i> <code>MonadJSM</code> ~ <code>MonadIO</code> when building with GHCJS.
+</p>
+</section>
+<section id="slide-org2b38f4b">
+<h3 id="org2b38f4b">Unremarkable code</h3>
+<div class="org-src-container">
+
+<pre  class="src src-haskell"><span style="color: #A6E22E;">initShader</span>
+  <span style="color: #FD971F;">::</span> <span style="color: #66D9EF;">GHCJS.GLenum</span>
+  <span style="color: #FD971F;">-&gt;</span> <span style="color: #66D9EF;">Getter</span> s <span style="color: #66D9EF;">Text</span>
+  <span style="color: #FD971F;">-&gt;</span> s
+  <span style="color: #FD971F;">-&gt;</span> <span style="color: #66D9EF;">WebGLRenderingContext</span>
+  <span style="color: #FD971F;">-&gt;</span> <span style="color: #66D9EF;">WebGLM</span> <span style="color: #66D9EF;">WebGLShader</span>
+<span style="color: #A6E22E;">initShader</span> sType sL source cx <span style="color: #FD971F;">=</span> <span style="color: #F92672;">do</span>
+</pre>
+</div>
+<div class="org-src-container">
+
+<pre  class="src src-haskell"><span style="color: #A6E22E;">initProgram</span>
+  <span style="color: #FD971F;">::</span> <span style="color: #66D9EF;">VertSrc</span>
+  <span style="color: #FD971F;">-&gt;</span> <span style="color: #66D9EF;">FragSrc</span>
+  <span style="color: #FD971F;">-&gt;</span> <span style="color: #66D9EF;">WebGLRenderingContext</span>
+  <span style="color: #FD971F;">-&gt;</span> <span style="color: #66D9EF;">WebGLM</span> <span style="color: #66D9EF;">WebGLProgram</span>
+<span style="color: #A6E22E;">initProgram</span> vs fs cx <span style="color: #FD971F;">=</span> <span style="color: #F92672;">do</span>
+</pre>
+</div>
+</section>
+<section id="slide-orgd3eeb70">
+<h3 id="orgd3eeb70">Code unremarkable</h3>
+<p>
+Check for errors
+</p>
+<div class="org-src-container">
+
+<pre  class="src src-haskell">ok <span style="color: #FD971F;">&lt;-</span> GHCJS.liftJSM <span style="color: #FD971F;">.</span> GHCJS.fromJSValUnchecked <span style="color: #FD971F;">=&lt;&lt;</span>
+  GLB.getShaderParameter cx <span style="color: #AE81FF;">(</span><span style="color: #66D9EF;">Just</span> s<span style="color: #AE81FF;">)</span> <span style="color: #66D9EF;">GLB.COMPILE_STATUS</span>
+</pre>
+</div>
+<div class="org-src-container">
+
+<pre  class="src src-haskell">ok <span style="color: #FD971F;">&lt;-</span> GHCJS.liftJSM <span style="color: #FD971F;">.</span> GHCJS.fromJSValUnchecked <span style="color: #FD971F;">=&lt;&lt;</span>
+  GLB.getProgramParameter cx <span style="color: #AE81FF;">(</span><span style="color: #66D9EF;">Just</span> p<span style="color: #AE81FF;">)</span> <span style="color: #66D9EF;">GLB.LINK_STATUS</span>
+</pre>
+</div>
+<p>
+Lean on abstractions to handle plumbing
+</p>
+<div class="org-src-container">
+
+<pre  class="src src-haskell">vs' <span style="color: #FD971F;">&lt;-</span> initShader <span style="color: #66D9EF;">GLB.VERTEX_SHADER</span> <span style="color: #AE81FF;">(</span>to unVertSrc<span style="color: #AE81FF;">)</span> vs cx
+fs' <span style="color: #FD971F;">&lt;-</span> initShader <span style="color: #66D9EF;">GLB.FRAGMENT_SHADER</span> <span style="color: #AE81FF;">(</span>to unFragSrc<span style="color: #AE81FF;">)</span> fs cx
+GLB<span style="color: #A6E22E;">.</span>attachShader cx <span style="color: #AE81FF;">(</span><span style="color: #66D9EF;">Just</span> p<span style="color: #AE81FF;">)</span> <span style="color: #AE81FF;">(</span><span style="color: #66D9EF;">Just</span> vs'<span style="color: #AE81FF;">)</span>
+GLB<span style="color: #A6E22E;">.</span>attachShader cx <span style="color: #AE81FF;">(</span><span style="color: #66D9EF;">Just</span> p<span style="color: #AE81FF;">)</span> <span style="color: #AE81FF;">(</span><span style="color: #66D9EF;">Just</span> fs'<span style="color: #AE81FF;">)</span>
+</pre>
+</div>
+</section>
+<section id="slide-org274d55e">
+<h3 id="org274d55e">Abstraction to <code>Event</code></h3>
+<p>
+Reflex helps out here too:
+</p>
+<div class="org-src-container">
+
+<pre  class="src src-haskell"><span style="color: #A6E22E;">fanEither</span> <span style="color: #FD971F;">::</span> <span style="color: #FD971F;">...</span> <span style="color: #FD971F;">=&gt;</span> <span style="color: #66D9EF;">Event</span> t <span style="color: #AE81FF;">(</span><span style="color: #66D9EF;">Either</span> a b<span style="color: #AE81FF;">)</span> <span style="color: #FD971F;">-&gt;</span> <span style="color: #AE81FF;">(</span><span style="color: #66D9EF;">Event</span> t a, <span style="color: #66D9EF;">Event</span> t b<span style="color: #AE81FF;">)</span>
+</pre>
+</div>
+<div class="org-src-container">
+
+<pre  class="fragment (roll-in)"><span style="color: #A6E22E;">createGOL</span> <span style="color: #FD971F;">::</span> <span style="color: #FD971F;">...</span> <span style="color: #FD971F;">=&gt;</span> <span style="color: #66D9EF;">WebGLRenderingContext</span> <span style="color: #FD971F;">-&gt;</span> m <span style="color: #AE81FF;">(</span><span style="color: #66D9EF;">Either</span> <span style="color: #66D9EF;">Error</span> <span style="color: #66D9EF;">GOL</span><span style="color: #AE81FF;">)</span>
+</pre>
+</div>
+<div class="org-src-container">
+
+<pre  class="fragment (roll-in)"><span style="color: #AE81FF;">(</span>eError, eGol<span style="color: #AE81FF;">)</span> <span style="color: #FD971F;">&lt;-</span> fmap R.fanEither <span style="color: #FD971F;">.</span> RD.requestDomAction <span style="color: #FD971F;">$</span>
+  R.current <span style="color: #AE81FF;">(</span>createGOL <span style="color: #FD971F;">&lt;$&gt;</span> dCx<span style="color: #AE81FF;">)</span> <span style="color: #FD971F;">&lt;@</span> ePost
+</pre>
+</div>
+<div class="org-src-container">
+
+<pre  class="fragment (roll-in)"><span style="color: #A6E22E;">eError</span> <span style="color: #FD971F;">::</span> <span style="color: #66D9EF;">Event</span> t <span style="color: #66D9EF;">Error</span>
+<span style="color: #A6E22E;">eGol</span> <span style="color: #FD971F;">::</span> <span style="color: #66D9EF;">Event</span> t <span style="color: #66D9EF;">GOL</span>
+</pre>
+</div>
+</section>
+<section id="slide-orgb94e807">
+<h3 id="orgb94e807">Fork in the graph</h3>
+<ul>
+<li class="fragment roll-in">An error - Bugger</li>
+<li class="fragment roll-in">An initialised environment - Woot</li>
+<li class="fragment roll-in">Reflex comes out to play, again.</li>
+<li class="fragment roll-in"><code>Switching</code></li>
+<li class="fragment roll-in">There are efficiency benefits too, as disconnected pieces of the graph are garbage collected</li>
+
+</ul>
+</section>
+<section id="slide-org3e8483f">
+<h3 id="org3e8483f">Only what we need</h3>
+<p>
+The FP way, narrow your focus/function to a smaller problem.
+</p>
+<ul>
+<li class="fragment roll-in"><p>
+One to display the error
+</p>
+<div class="org-src-container">
+
+<pre  class="src src-haskell"><span style="color: #A6E22E;">golError</span> <span style="color: #FD971F;">::</span> <span style="color: #FD971F;">...</span> <span style="color: #FD971F;">=&gt;</span> <span style="color: #66D9EF;">Error</span> <span style="color: #FD971F;">-&gt;</span> m <span style="color: #AE81FF;">()</span>
+</pre>
+</div></li>
+<li class="fragment roll-in"><p>
+One to run the orchestration for our WebGL
+</p>
+<div class="org-src-container">
+
+<pre  class="src src-haskell"><span style="color: #A6E22E;">golRender</span> <span style="color: #FD971F;">::</span> <span style="color: #FD971F;">...</span> <span style="color: #FD971F;">=&gt;</span> <span style="color: #66D9EF;">GOLInfo</span> t <span style="color: #FD971F;">-&gt;</span> <span style="color: #66D9EF;">StdGen</span> <span style="color: #FD971F;">-&gt;</span> <span style="color: #66D9EF;">GOL</span> <span style="color: #FD971F;">-&gt;</span> m <span style="color: #AE81FF;">()</span>
+</pre>
+</div></li>
+
+</ul>
+</section>
+<section id="slide-org54c8041">
+<h3 id="org54c8041">Making the choice</h3>
+<div class="org-src-container">
+
+<pre  class="src src-haskell"><span style="color: #F92672;">_</span> <span style="color: #FD971F;">&lt;-</span> RD.widgetHold <span style="color: #AE81FF;">(</span>RD.text <span style="color: #E6DB74;">"Nothing Ready Yet."</span><span style="color: #AE81FF;">)</span> <span style="color: #FD971F;">$</span> R.leftmost
+  <span style="color: #AE81FF;">[</span> golError                                            <span style="color: #FD971F;">&lt;$&gt;</span> eError
+  , golRender <span style="color: #66D9EF;">(</span><span style="color: #66D9EF;">GOLInfo</span> eReset eStepOnce dTick dCx<span style="color: #66D9EF;">)</span> sGen <span style="color: #FD971F;">&lt;$&gt;</span> eDrawn
+  <span style="color: #AE81FF;">]</span>
+</pre>
+</div>
+</section>
+<section id="slide-org0a9a25f">
+<h3 id="org0a9a25f">Manage change</h3>
+<ul>
+<li><p>
+Let Reflex manage our <code>GOL</code> record in a <code>Dynamic</code>
+</p>
+<div class="org-src-container">
+
+<pre  class="src src-haskell">dGOL <span style="color: #FD971F;">&lt;-</span> R.holdDyn gol' <span style="color: #FD971F;">$</span> R.leftmost
+  <span style="color: #AE81FF;">[</span> eStepRendered
+  , eWasReset
+  <span style="color: #AE81FF;">]</span>
+</pre>
+</div></li>
+<li><p>
+Updated on a step or reset <code>Event</code>
+</p>
+<div class="org-src-container">
+
+<pre  class="src src-haskell"><span style="color: #A6E22E;">eStepRendered</span> <span style="color: #FD971F;">::</span> <span style="color: #66D9EF;">Event</span> t <span style="color: #66D9EF;">GOL</span>
+<span style="color: #A6E22E;">eWasReset</span>     <span style="color: #FD971F;">::</span> <span style="color: #66D9EF;">Event</span> t <span style="color: #66D9EF;">GOL</span>
+</pre>
+</div></li>
+
+</ul>
+</section>
+<section id="slide-org3250d0d">
+<h3 id="org3250d0d">Step / Reset</h3>
+<div class="org-src-container">
+
+<pre  class="fragment (roll-in)"><span style="color: #A6E22E;">step</span>            <span style="color: #FD971F;">::</span> <span style="color: #FD971F;">...</span> <span style="color: #FD971F;">=&gt;</span>           <span style="color: #66D9EF;">WebGLRenderingContext</span> <span style="color: #FD971F;">-&gt;</span> <span style="color: #66D9EF;">GOL</span> <span style="color: #FD971F;">-&gt;</span> m <span style="color: #66D9EF;">GOL</span>
+<span style="color: #A6E22E;">setInitialState</span> <span style="color: #FD971F;">::</span> <span style="color: #FD971F;">...</span> <span style="color: #FD971F;">=&gt;</span> <span style="color: #66D9EF;">StdGen</span> <span style="color: #FD971F;">-&gt;</span> <span style="color: #66D9EF;">WebGLRenderingContext</span> <span style="color: #FD971F;">-&gt;</span> <span style="color: #66D9EF;">GOL</span> <span style="color: #FD971F;">-&gt;</span> m <span style="color: #66D9EF;">GOL</span>
+</pre>
+</div>
+<div class="org-src-container">
+
+<pre  class="fragment (roll-in)">eStepRendered <span style="color: #FD971F;">&lt;-</span> glRun step <span style="color: #FD971F;">.</span> R.switchDyn <span style="color: #FD971F;">$</span> _golAuto golInfo
+eWasReset     <span style="color: #FD971F;">&lt;-</span> glRun <span style="color: #AE81FF;">(</span>setInitialState sGen<span style="color: #AE81FF;">)</span> <span style="color: #FD971F;">$</span> _golReset golInfo
+</pre>
+</div>
+<div class="org-src-container">
+
+<pre  class="fragment (roll-in)"><span style="color: #A6E22E;">glRun</span> f eGo <span style="color: #FD971F;">=</span> RD.requestDomAction <span style="color: #FD971F;">$</span> R.current
+  <span style="color: #AE81FF;">(</span> <span style="color: #66D9EF;">(</span><span style="color: #FD971F;">\</span>c <span style="color: #FD971F;">-&gt;</span> f c <span style="color: #FD971F;">&gt;=&gt;</span> draw c<span style="color: #66D9EF;">)</span>
+    <span style="color: #FD971F;">&lt;$&gt;</span> _golCx golInfo
+    <span style="color: #FD971F;">&lt;*&gt;</span> dGOL
+  <span style="color: #AE81FF;">)</span> <span style="color: #FD971F;">&lt;@</span> eGo
+</pre>
+</div>
+</section>
+<section id="slide-org2e99d15">
+<h3 id="org2e99d15">Recursive Definition</h3>
+<div class="org-src-container">
+
+<pre  class="src src-haskell"><span style="color: #A6E22E;">golRender</span> golInfo sGen gol' <span style="color: #FD971F;">=</span> <span style="color: #F92672;">mdo</span>
+  dGOL <span style="color: #FD971F;">&lt;-</span> R.holdDyn gol' <span style="color: #FD971F;">$</span> R.leftmost
+    <span style="color: #AE81FF;">[</span> eStepRendered
+    , eWasReset
+    <span style="color: #AE81FF;">]</span>
+
+  <span style="color: #F92672;">let</span>
+    glRun f eGo <span style="color: #FD971F;">=</span> RD.requestDomAction <span style="color: #FD971F;">$</span> R.current
+      <span style="color: #AE81FF;">(</span> <span style="color: #66D9EF;">(</span><span style="color: #FD971F;">\</span>c <span style="color: #FD971F;">-&gt;</span> f c <span style="color: #FD971F;">&gt;=&gt;</span> draw c<span style="color: #66D9EF;">)</span>
+        <span style="color: #FD971F;">&lt;$&gt;</span> _golCx golInfo
+        <span style="color: #FD971F;">&lt;*&gt;</span> dGOL
+      <span style="color: #AE81FF;">)</span> <span style="color: #FD971F;">&lt;@</span> eGo
+
+  eStepRendered <span style="color: #FD971F;">&lt;-</span> glRun step <span style="color: #FD971F;">.</span> R.switchDyn <span style="color: #FD971F;">$</span> _golAuto golInfo
+  eWasReset     <span style="color: #FD971F;">&lt;-</span> glRun <span style="color: #AE81FF;">(</span>setInitialState sGen<span style="color: #AE81FF;">)</span> <span style="color: #FD971F;">$</span> _golReset golInfo
+</pre>
+</div>
+</section>
+</section>
+<section>
+<section id="slide-org25ee7fd">
+<h2 id="org25ee7fd">Wrapping Up</h2>
+<div class="outline-text-2" id="text-org25ee7fd">
+</div>
+</section>
+<section id="slide-org1a383fa">
+<h3 id="org1a383fa">Nice bits</h3>
+<ul>
+<li class="fragment roll-in">FP graphics, in the browser?! IT WORKS!!1eleventy!</li>
+<li class="fragment roll-in">Being able to use Mozilla Developer Network (MDN) docs is awesome</li>
+<li class="fragment roll-in">Hackage is full of awesome packages
+<ul>
+<li class="fragment roll-in">linear</li>
+<li class="fragment roll-in">Clay</li>
+<li class="fragment roll-in">colour</li>
+
+</ul></li>
+
+</ul>
+</section>
+<section id="slide-org00f5da3">
+<h3 id="org00f5da3">Sticky bits</h3>
+<ul>
+<li class="fragment roll-in">Some types don't line up: <code>ArrayBufferView</code> doesn't exist in JS</li>
+<li class="fragment roll-in">Some optional function arguments&#x2026; aren't</li>
+<li class="fragment roll-in"><p>
+Snip of MDN for Canvas 2D <code>fill</code> function
+</p>
+<div class="org-src-container">
+
+<pre  class="src src-javascript"><span style="color: #F92672;">void</span> <span style="color: #FD971F;">ctx</span>.fill<span style="color: #AE81FF;">(</span><span style="color: #66D9EF;">[</span>fillRule<span style="color: #66D9EF;">]</span><span style="color: #AE81FF;">)</span>;
+<span style="color: #F92672;">void</span> <span style="color: #FD971F;">ctx</span>.fill<span style="color: #AE81FF;">(</span>path<span style="color: #66D9EF;">[</span>, fillRule<span style="color: #66D9EF;">]</span><span style="color: #AE81FF;">)</span>;
+</pre>
+</div></li>
+<li class="fragment roll-in"><p>
+Type of <code>fill</code> from <code>ghcjs-dom</code> for 2D Canvas
+</p>
+<div class="org-src-container">
+
+<pre  class="src src-haskell"><span style="color: #A6E22E;">fill</span> <span style="color: #FD971F;">::</span> <span style="color: #FD971F;">...</span> <span style="color: #FD971F;">=&gt;</span> <span style="color: #66D9EF;">CanvasRenderingContext2D</span> <span style="color: #FD971F;">-&gt;</span> <span style="color: #66D9EF;">Maybe</span> <span style="color: #66D9EF;">CanvasWindingRule</span> <span style="color: #FD971F;">-&gt;</span> m <span style="color: #AE81FF;">()</span>
+</pre>
+</div></li>
+
+</ul>
+</section>
+</section>
+<section>
+<section id="slide-org7737c4b">
+<h2 id="org7737c4b">Have at it!</h2>
+<p>
+From here, many good things can come.
+</p>
+<ul>
+<li>Games</li>
+<li>Charts</li>
+<li>More art</li>
+<li>All driven by the power of FP</li>
+<li>Nothing can stop you, try something</li>
+
+</ul>
+
+<p>
+Thank you. :)
+</p>
+
+</section>
+</section>
+<section>
+<section id="slide-orgcc001b6">
+<h2 id="orgcc001b6">References</h2>
+<ul>
+<li>Reflex
+<ul>
+<li>Workshop by Dave Laing, Day 2 - ComposeConf 2018!!</li>
+<li><a href="https://github.com/reflex-frp/reflex-platform">https://github.com/reflex-frp/reflex-platform</a></li>
+<li><a href="https://github.com/obsidiansystems/obelisk">https://github.com/obsidiansystems/obelisk</a></li>
+<li><a href="https://blog.qfpl.io/posts/reflex/basics/introduction/">https://blog.qfpl.io/posts/reflex/basics/introduction/</a></li>
+
+</ul></li>
+<li>MDN docs 
+<ul>
+<li><a href="https://developer.mozilla.org/en-US/docs/Web/API">https://developer.mozilla.org/en-US/docs/Web/API</a></li>
+
+</ul></li>
+<li>WebGL
+<ul>
+<li>Game of Life in a Fragment Shader
+<a href="https://nullprogram.com/blog/2014/06/10/">https://nullprogram.com/blog/2014/06/10/</a></li>
+
+</ul></li>
+
+</ul>
+
+<p>
+&#x2026;and so many more, please come and ask!
+</p>
+</section>
+</section>
+</div>
+</div>
+<script src="https://cdn.jsdelivr.net/reveal.js/3.0.0/lib/js/head.min.js"></script>
+<script src="https://cdn.jsdelivr.net/reveal.js/3.0.0/js/reveal.js"></script>
+
+<script>
+// Full list of configuration options available here:
+// https://github.com/hakimel/reveal.js#configuration
+Reveal.initialize({
+
+controls: true,
+progress: true,
+history: false,
+center: true,
+slideNumber: 'c',
+rollingLinks: false,
+keyboard: true,
+overview: true,
+
+theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+transition: Reveal.getQueryHash().transition || 'default', // default/cube/page/concave/zoom/linear/fade/none
+transitionSpeed: 'default',
+multiplex: {
+    secret: '', // null if client
+    id: '', // id, obtained from socket.io server
+    url: '' // Location of socket.io server
+},
+
+// Optional libraries used to extend on reveal.js
+dependencies: [
+ { src: 'https://cdn.jsdelivr.net/reveal.js/3.0.0/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+ { src: 'https://cdn.jsdelivr.net/reveal.js/3.0.0/plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+ { src: 'https://cdn.jsdelivr.net/reveal.js/3.0.0/plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+ { src: 'https://cdn.jsdelivr.net/reveal.js/3.0.0/plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+ { src: 'https://cdn.jsdelivr.net/reveal.js/3.0.0/plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }]
+});
+</script>
+</body>
+</html>

@@ -13,7 +13,6 @@
  - Encourage / inspire you to take the plunge!
 * Generative and Evolutionary Art
   #+ATTR_REVEAL: :frag (roll-in)
- - Largely autonomous
  - Often emergent
  - A fascinating rabbit hole
 ** familiar
@@ -67,7 +66,7 @@ file:genEvoArt/tiledLines.png
    - Decide to turn 90$^{\circ}$ left or right
    - Draw a line of predetermined length
    - Repeat ${(size/step)^2}$ times
-** Enter The Canvas
+** Draw a line
   #+ATTR_REVEAL: :frag (roll-in)
   - JavaScript
     #+BEGIN_SRC javascript
@@ -124,7 +123,7 @@ for (var x = 0; x < size; x += step) {
     #+INCLUDE: "../frontend/src/Canvas2D/TiledLines.hs" :LINES "129-133" src haskell
 ** Glorious lines
 #+BEGIN_SRC haskell
-  Reflex.Dom.Core.requestDomAction :: DomRenderHook t m => Event t (JSM a) -> m (Event t a)
+  requestDomAction :: DomRenderHook t m => Event t (JSM a) -> m (Event t a)
 
   _ <- requestDomAction $
     current (drawSteps <$> dCx) <@ ePost
@@ -297,7 +296,7 @@ file:genEvoArt/gol.gif
 ** Monad transformers, woo
    We can have /nicer/ things.
    #+INCLUDE: "../frontend/src/WebGL/Types.hs" :LINES "80-98" src haskell
-   ~MonadJSM~ ~ ~MonadIO~ when building with GHCJS.
+   /nb:/ ~MonadJSM~ ~ ~MonadIO~ when building with GHCJS.
 ** Unremarkable code
    #+INCLUDE: "../frontend/src/WebGL/Internal.hs" :LINES "46-53" src haskell
    #+INCLUDE: "../frontend/src/WebGL/Internal.hs" :LINES "66-72" src haskell
@@ -305,7 +304,7 @@ file:genEvoArt/gol.gif
    Check for errors
    #+INCLUDE: "../frontend/src/WebGL/Internal.hs" :LINES "57-59" src haskell
    #+INCLUDE: "../frontend/src/WebGL/Internal.hs" :LINES "80-82" src haskell
-   Lean on our abstractions to handle plumbing
+   Lean on abstractions to handle plumbing
    #+INCLUDE: "../frontend/src/WebGL/Internal.hs" :LINES "73-78" src haskell
 ** Abstraction to ~Event~
    Reflex helps out here too:
@@ -344,21 +343,69 @@ file:genEvoArt/gol.gif
 ** Making the choice
    #+INCLUDE: "../frontend/src/WebGL/GOL.hs" :LINES "242-246" src haskell
 ** Manage change
-   - Maintain our ~GOL~ record in a ~Dynamic~
-   - At it will change over time
-   - We let Reflex manage that for us
+   - Let Reflex manage our ~GOL~ record in a ~Dynamic~
      #+INCLUDE: "../frontend/src/WebGL/GOL.hs" :LINES "198-202" src haskell
    - Updated on a step or reset ~Event~
      #+BEGIN_SRC haskell
        eStepRendered :: Event t GOL
        eWasReset     :: Event t GOL
      #+END_SRC
-** ~Event~ to draw
-   #+INCLUDE: "../frontend/src/WebGL/GOL.hs" :LINES "204-209" src haskell
-   /NOTE:/ Use of ~dGOL~ in this definition.
-** Render a Step  
+** Step / Reset
+   #+ATTR_REVEAL: :frag (roll-in)
    #+BEGIN_SRC haskell
-     step :: ... => WebGLRenderingContext -> GOL -> m GOL
+step            :: ... =>           WebGLRenderingContext -> GOL -> m GOL
+setInitialState :: ... => StdGen -> WebGLRenderingContext -> GOL -> m GOL
    #+END_SRC
-   #+INCLUDE: "../frontend/src/WebGL/GOL.hs" :LINES "210-211" src haskell
-* Cube of Life (Spicy) - WebGL
+   #+ATTR_REVEAL: :frag (roll-in)
+   #+INCLUDE: "../frontend/src/WebGL/GOL.hs" :LINES "210-212" src haskell
+   #+ATTR_REVEAL: :frag (roll-in)
+   #+INCLUDE: "../frontend/src/WebGL/GOL.hs" :LINES "204-209" src haskell
+** Recursive Definition
+   #+INCLUDE: "../frontend/src/WebGL/GOL.hs" :LINES "197-212" src haskell
+* Wrapping Up
+** Nice bits
+  #+ATTR_REVEAL: :frag (roll-in)
+  - FP graphics, in the browser?! IT WORKS!!1eleventy!
+  - Being able to use Mozilla Developer Network (MDN) docs is awesome
+  - Hackage is full of awesome packages
+    #+ATTR_REVEAL: :frag (roll-in)
+    - linear
+    - Clay
+    - colour
+** Sticky bits
+   #+ATTR_REVEAL: :frag (roll-in)
+   - Some types don't line up: ~ArrayBufferView~ doesn't exist in JS
+   - Some optional function arguments... aren't
+   - Snip of MDN for Canvas 2D ~fill~ function
+       #+BEGIN_SRC javascript
+void ctx.fill([fillRule]);
+void ctx.fill(path[, fillRule]);
+       #+END_SRC
+       #+ATTR_REVEAL: :frag (roll-in)
+   - Type of ~fill~ from ~ghcjs-dom~ for 2D Canvas
+        #+BEGIN_SRC haskell
+fill :: ... => CanvasRenderingContext2D -> Maybe CanvasWindingRule -> m ()
+        #+END_SRC
+* Have at it!        
+  From here, many good things can come.
+  - Games
+  - Charts
+  - More art
+  - All driven by the power of FP
+  - Nothing can stop you, try something
+   
+  Thank you. :)
+
+* References
+  - Reflex
+    - Workshop by Dave Laing, Day 2 - ComposeConf 2018!!
+    - https://github.com/reflex-frp/reflex-platform
+    - https://github.com/obsidiansystems/obelisk
+    - https://blog.qfpl.io/posts/reflex/basics/introduction/
+  - MDN docs 
+    - https://developer.mozilla.org/en-US/docs/Web/API
+  - WebGL
+    - Game of Life in a Fragment Shader
+      https://nullprogram.com/blog/2014/06/10/
+      
+  ...and so many more, please come and ask!
