@@ -148,7 +148,7 @@ tiledLines _ = do
 
     dWeird' <- bool NoWeird Weird <$$> RD.toggle False eWeird
 
-    dStep <- R.foldDyn ($) defStepSize $ R.mergeWith (.)
+    dStep <- R.foldDyn ($) (fromIntegral defStepSize) $ R.mergeWith (.)
       [ incSize <$> eStepSize eInc
       , decSize <$> eStepSize eDec
       ]
