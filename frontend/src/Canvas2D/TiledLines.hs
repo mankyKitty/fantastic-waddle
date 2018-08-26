@@ -120,7 +120,7 @@ tiledLines _ = do
   ePost <- RD.getPostBuild
   let
     defStepSize :: Word8
-    defStepSize = 10
+    defStepSize = 30
 
     drawSteps stp cap cx = do
       DOM_CR.clearRect cx 0 0 (fromIntegral size) (fromIntegral size)
@@ -148,7 +148,7 @@ tiledLines _ = do
 
     dWeird' <- bool NoWeird Weird <$$> RD.toggle False eWeird
 
-    dStep <- R.foldDyn ($) step $ R.mergeWith (.)
+    dStep <- R.foldDyn ($) defStepSize $ R.mergeWith (.)
       [ incSize <$> eStepSize eInc
       , decSize <$> eStepSize eDec
       ]

@@ -1,5 +1,5 @@
 #+REVEAL_ROOT: https://cdn.jsdelivr.net/reveal.js/3.0.0/
-#+OPTIONS: reveal_title_slide:"<h1>%t</h1><h2>%a</h2><h4>QFPL</h4><h3>%e</h3>"
+#+OPTIONS: reveal_title_slide:"<h1>%t</h1><h2>%a</h2><h4>Queensland&nbsp;Functional&nbsp;Programming&nbsp;Lab</h4><h3>%e</h3>"
 #+OPTIONS: num:nil
 #+OPTIONS: toc:nil
 
@@ -13,7 +13,8 @@
  - Encourage / inspire you to take the plunge!
 * Generative and Evolutionary Art
   #+ATTR_REVEAL: :frag (roll-in)
- - Often emergent
+ - Predominantly computer generated
+ - Repetitive algorithm influenced by random or external input
  - A fascinating rabbit hole
 ** familiar
 #+DOWNLOADED: http://www.complexification.net/gallery/machines/substrate/substrate0014.jpg @ 2018-08-08 11:46:12
@@ -54,7 +55,7 @@ file:genEvoArt/tiledLines.png
    - ~Behaviour~ : a value at *all points* in time.
    - ~Dynamic~ : Combination of an ~Event~ and a ~Behaviour~.
      * Unique to Reflex.
-   - Functions for creating the above
+   - 'Primitives' for creating and manipulating the above
    - Lean heavily on existing abstractions:
      - ~Functor~, ~Applicative~, ~Monad~, and friends.
 * Tiled Lines - Canvas

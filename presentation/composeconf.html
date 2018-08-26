@@ -27,12 +27,12 @@
 <body>
 <div class="reveal">
 <div class="slides">
-<section id="sec-title-slide"><h1>Reflexive Art</h1><h2>Sean Chalmers</h2><h4>QFPL</h4><h3><a href="mailto:sean.chalmers@data61.csiro.au">sean.chalmers@data61.csiro.au</a></h3>
+<section id="sec-title-slide"><h1>Reflexive Art</h1><h2>Sean Chalmers</h2><h4>Queensland&nbsp;Functional&nbsp;Programming&nbsp;Lab</h4><h3><a href="mailto:sean.chalmers@data61.csiro.au">sean.chalmers@data61.csiro.au</a></h3>
 </section>
 
 <section>
-<section id="slide-org3148029">
-<h2 id="org3148029">The Goals</h2>
+<section id="slide-org4b75981">
+<h2 id="org4b75981">The Goals</h2>
 <ul>
 <li>Introduce Reflex <code>svg</code> and <code>canvas</code> libraries.</li>
 <li>Show Haskell is capable of front-end art &amp; animation.</li>
@@ -42,16 +42,17 @@
 </section>
 </section>
 <section>
-<section id="slide-org252a3e2">
-<h2 id="org252a3e2">Generative and Evolutionary Art</h2>
+<section id="slide-org71fa593">
+<h2 id="org71fa593">Generative and Evolutionary Art</h2>
 <ul>
-<li class="fragment roll-in">Often emergent</li>
+<li class="fragment roll-in">Predominantly computer generated</li>
+<li class="fragment roll-in">Repetitive algorithm influenced by random or external input</li>
 <li class="fragment roll-in">A fascinating rabbit hole</li>
 
 </ul>
 </section>
-<section id="slide-orgc5e3343">
-<h3 id="orgc5e3343">familiar</h3>
+<section id="slide-org06f81f5">
+<h3 id="org06f81f5">familiar</h3>
 
 <div class="figure">
 <p><img src="genEvoArt/substrate0014_2018-08-08_11-46-12.jpg" alt="substrate0014_2018-08-08_11-46-12.jpg" />
@@ -64,8 +65,8 @@
 
 </ul>
 </section>
-<section id="slide-orgb337319">
-<h3 id="orgb337319">bizarre</h3>
+<section id="slide-org73909d5">
+<h3 id="org73909d5">bizarre</h3>
 
 <div class="figure">
 <p><img src="genEvoArt/hairball_mantra_10_1_2018-08-08_11-55-33.jpg" alt="hairball_mantra_10_1_2018-08-08_11-55-33.jpg" width="60%" height="60%" />
@@ -78,8 +79,8 @@
 
 </ul>
 </section>
-<section id="slide-orge1d332a">
-<h3 id="orge1d332a">simple</h3>
+<section id="slide-org1e894c2">
+<h3 id="org1e894c2">simple</h3>
 
 <div class="figure">
 <p><img src="genEvoArt/tiledLines.png" alt="tiledLines.png" width="40%" height="40%" style="background-color:white;" />
@@ -95,8 +96,8 @@
 </section>
 </section>
 <section>
-<section id="slide-orgef37e3f">
-<h2 id="orgef37e3f">Why Haskell?</h2>
+<section id="slide-org7fa6614">
+<h2 id="org7fa6614">Why Haskell?</h2>
 <ul>
 <li>Cool Types
 <ul>
@@ -132,8 +133,8 @@
 </section>
 </section>
 <section>
-<section id="slide-org79bc5d0">
-<h2 id="org79bc5d0">Why Reflex?</h2>
+<section id="slide-org004fed9">
+<h2 id="org004fed9">Why Reflex?</h2>
 <ul>
 <li>Functional Reactive Programming</li>
 <li>Flexible and powerful technique for describing interactions over time</li>
@@ -142,8 +143,8 @@
 
 </ul>
 </section>
-<section id="slide-orgf6242fa">
-<h3 id="orgf6242fa">The basics</h3>
+<section id="slide-org334a036">
+<h3 id="org334a036">The basics</h3>
 <ul>
 <li class="fragment roll-in"><code>Event</code> : a value at <b>a point</b> in time.</li>
 <li class="fragment roll-in"><code>Behaviour</code> : a value at <b>all points</b> in time.</li>
@@ -152,7 +153,7 @@
 <li>Unique to Reflex.</li>
 
 </ul></li>
-<li class="fragment roll-in">Functions for creating the above</li>
+<li class="fragment roll-in">'Primitives' for creating and manipulating the above</li>
 <li class="fragment roll-in">Lean heavily on existing abstractions:
 <ul>
 <li><code>Functor</code>, <code>Applicative</code>, <code>Monad</code>, and friends.</li>
@@ -163,16 +164,16 @@
 </section>
 </section>
 <section>
-<section id="slide-orge2ed820">
-<h2 id="orge2ed820">Tiled Lines - Canvas</h2>
+<section id="slide-org2c66895">
+<h2 id="org2c66895">Tiled Lines - Canvas</h2>
 
 <div class="figure">
 <p><img src="genEvoArt/tiledLines.png" alt="tiledLines.png" width="40%" height="40%" style="background-color:white;" />
 </p>
 </div>
 </section>
-<section id="slide-orge5e676f">
-<h3 id="orge5e676f">Basic Idea</h3>
+<section id="slide-org1c09940">
+<h3 id="org1c09940">Basic Idea</h3>
 <ul>
 <li class="fragment roll-in">Draw a line of predetermined length</li>
 <li class="fragment roll-in">Decide to turn 90\(^{\circ}\) left or right</li>
@@ -181,8 +182,8 @@
 
 </ul>
 </section>
-<section id="slide-org9ffedc4">
-<h3 id="org9ffedc4">Draw a line</h3>
+<section id="slide-orga8b9574">
+<h3 id="orga8b9574">Draw a line</h3>
 <ul>
 <li class="fragment roll-in"><p>
 JavaScript
@@ -213,8 +214,8 @@ Haskell
 
 </ul>
 </section>
-<section id="slide-org4b57150">
-<h3 id="org4b57150">Requesting a Canvas Context</h3>
+<section id="slide-org7199d73">
+<h3 id="org7199d73">Requesting a Canvas Context</h3>
 <p>
 We need a canvas rendering context:
 </p>
@@ -255,8 +256,8 @@ Yay!
 
 </ul>
 </section>
-<section id="slide-orgff355b6">
-<h3 id="orgff355b6">random Have i ? can</h3>
+<section id="slide-org5ba1929">
+<h3 id="org5ba1929">random Have i ? can</h3>
 <p>
 Decide to turn left or right&#x2026;
 </p>
@@ -283,8 +284,8 @@ Decide to turn left or right&#x2026;
 </pre>
 </div>
 </section>
-<section id="slide-org98eba06">
-<h3 id="org98eba06">Glorious loops</h3>
+<section id="slide-orgac916dc">
+<h3 id="orgac916dc">Glorious loops</h3>
 <p>
 Repeat, lots.
 </p>
@@ -314,8 +315,8 @@ functional, immutable
 
 </ul>
 </section>
-<section id="slide-org2cdd87f">
-<h3 id="org2cdd87f">Glorious lines</h3>
+<section id="slide-orga858e08">
+<h3 id="orga858e08">Glorious lines</h3>
 <div class="org-src-container">
 
 <pre  class="src src-haskell"><span style="color: #A6E22E;">requestDomAction</span> <span style="color: #FD971F;">::</span> <span style="color: #66D9EF;">DomRenderHook</span> t m <span style="color: #FD971F;">=&gt;</span> <span style="color: #66D9EF;">Event</span> t <span style="color: #AE81FF;">(</span><span style="color: #66D9EF;">JSM</span> a<span style="color: #AE81FF;">)</span> <span style="color: #FD971F;">-&gt;</span> m <span style="color: #AE81FF;">(</span><span style="color: #66D9EF;">Event</span> t a<span style="color: #AE81FF;">)</span>
@@ -325,8 +326,8 @@ functional, immutable
 </pre>
 </div>
 </section>
-<section id="slide-orga45bde8">
-<h3 id="orga45bde8">Step input</h3>
+<section id="slide-org1d1c010">
+<h3 id="org1d1c010">Step input</h3>
 <p>
 Create a text input for our step size
 </p>
@@ -337,8 +338,8 @@ Create a text input for our step size
 </pre>
 </div>
 </section>
-<section id="slide-org38d4a06">
-<h3 id="org38d4a06">Step bump</h3>
+<section id="slide-org1f41022">
+<h3 id="org1f41022">Step bump</h3>
 <p>
 Add some buttons
 </p>
@@ -354,14 +355,14 @@ eDec <span style="color: #FD971F;">&lt;-</span> B.bsButton_ <span style="color: 
 </pre>
 </div>
 </section>
-<section id="slide-orgbd1f762">
-<h3 id="orgbd1f762">Step state</h3>
+<section id="slide-org787c224">
+<h3 id="org787c224">Step state</h3>
 <p>
 Keep track of the step size as it changes over time.
 </p>
 <div class="org-src-container">
 
-<pre  class="src src-haskell">dStep <span style="color: #FD971F;">&lt;-</span> R.foldDyn <span style="color: #AE81FF;">(</span><span style="color: #FD971F;">$</span><span style="color: #AE81FF;">)</span> step <span style="color: #FD971F;">$</span> R.mergeWith <span style="color: #AE81FF;">(</span><span style="color: #FD971F;">.</span><span style="color: #AE81FF;">)</span>
+<pre  class="src src-haskell">dStep <span style="color: #FD971F;">&lt;-</span> R.foldDyn <span style="color: #AE81FF;">(</span><span style="color: #FD971F;">$</span><span style="color: #AE81FF;">)</span> defStepSize <span style="color: #FD971F;">$</span> R.mergeWith <span style="color: #AE81FF;">(</span><span style="color: #FD971F;">.</span><span style="color: #AE81FF;">)</span>
   <span style="color: #AE81FF;">[</span> incSize <span style="color: #FD971F;">&lt;$&gt;</span> eStepSize eInc
   , decSize <span style="color: #FD971F;">&lt;$&gt;</span> eStepSize eDec
   <span style="color: #AE81FF;">]</span>
@@ -379,8 +380,8 @@ Keep track of the step size as it changes over time.
 </pre>
 </div>
 </section>
-<section id="slide-orgfe5ee77">
-<h3 id="orgfe5ee77">Wiring it in</h3>
+<section id="slide-org845d367">
+<h3 id="org845d367">Wiring it in</h3>
 <div class="org-src-container">
 
 <pre  class="src src-haskell"><span style="color: #F92672;">_</span> <span style="color: #FD971F;">&lt;-</span> requestDomAction <span style="color: #FD971F;">$</span>
@@ -388,8 +389,8 @@ Keep track of the step size as it changes over time.
 </pre>
 </div>
 </section>
-<section id="slide-org9392206">
-<h3 id="org9392206">Drawing the lines</h3>
+<section id="slide-orgf2ed4a1">
+<h3 id="orgf2ed4a1">Drawing the lines</h3>
 <div class="org-src-container">
 
 <pre  class="src src-haskell"><span style="color: #A6E22E;">drawSteps</span> stp cap cx <span style="color: #FD971F;">=</span> <span style="color: #F92672;">do</span>
@@ -408,8 +409,8 @@ Keep track of the step size as it changes over time.
 </section>
 </section>
 <section>
-<section id="slide-org6b27a42">
-<h2 id="org6b27a42">Squares - SVG</h2>
+<section id="slide-org0b17abe">
+<h2 id="org0b17abe">Squares - SVG</h2>
 
 <div class="figure">
 <p><img src="Squares%20-%20SVG/final_colored_grid_2018-08-20_13-11-31.png" alt="final_colored_grid_2018-08-20_13-11-31.png" width="40%" height="40%" />
@@ -420,8 +421,8 @@ Keep track of the step size as it changes over time.
 
 </ul>
 </section>
-<section id="slide-org2ec749c">
-<h3 id="org2ec749c">Basic Idea</h3>
+<section id="slide-orga3a1beb">
+<h3 id="orga3a1beb">Basic Idea</h3>
 <ul>
 <li class="fragment roll-in">Randomly place a bunch of squares such that none intersect</li>
 <li class="fragment roll-in">Randomly apply colouring and fill to each square</li>
@@ -429,8 +430,8 @@ Keep track of the step size as it changes over time.
 
 </ul>
 </section>
-<section id="slide-org86ac776">
-<h3 id="org86ac776">Ewww, strings</h3>
+<section id="slide-org85dd18a">
+<h3 id="org85dd18a">Ewww, strings</h3>
 <ul>
 <li class="fragment roll-in"><p>
 Using custom elements in <code>reflex-dom</code> is stringly
@@ -445,8 +446,8 @@ Using custom elements in <code>reflex-dom</code> is stringly
 
 </ul>
 </section>
-<section id="slide-orgfde6317">
-<h3 id="orgfde6317">Introducing <code>reflex-dom-svg</code></h3>
+<section id="slide-org8463d11">
+<h3 id="org8463d11">Introducing <code>reflex-dom-svg</code></h3>
 <ul>
 <li class="fragment roll-in">This package provides data types for:
 <ul>
@@ -460,8 +461,8 @@ Using custom elements in <code>reflex-dom</code> is stringly
 
 </ul>
 </section>
-<section id="slide-orgf523f70">
-<h3 id="orgf523f70">Thus</h3>
+<section id="slide-org14c3f12">
+<h3 id="org14c3f12">Thus</h3>
 <ul>
 <li class="fragment roll-in"><p>
 What was sad
@@ -489,8 +490,8 @@ Becomes happy
 
 </ul>
 </section>
-<section id="slide-orgf6d1059">
-<h3 id="orgf6d1059">Put the G in SVG</h3>
+<section id="slide-orgfd92301">
+<h3 id="orgfd92301">Put the G in SVG</h3>
 <ul>
 <li class="fragment roll-in"><p>
 To put a basic shape on the page
@@ -520,8 +521,8 @@ Looks like
 
 </ul>
 </section>
-<section id="slide-org869dafa">
-<h3 id="org869dafa">Data structures for great justice</h3>
+<section id="slide-orgeb6c882">
+<h3 id="orgeb6c882">Data structures for great justice</h3>
 <ul>
 <li class="fragment roll-in"><p>
 We will use a <code>polygon</code> for our squares
@@ -568,8 +569,8 @@ We can lens &amp; <code>traverse</code> our way to victory!
 
 </ul>
 </section>
-<section id="slide-orgaf161db">
-<h3 id="orgaf161db">Gift keeps giving</h3>
+<section id="slide-org0ba05b0">
+<h3 id="org0ba05b0">Gift keeps giving</h3>
 <ul>
 <li class="fragment roll-in"><p>
 <code>reflex</code> provides additional functionality for collections
@@ -599,8 +600,8 @@ RD<span style="color: #A6E22E;">.</span>simpleList <span style="color: #AE81FF;"
 
 </ul>
 </section>
-<section id="slide-org5fb8940">
-<h3 id="org5fb8940">Moving parts</h3>
+<section id="slide-orgae1dcf8">
+<h3 id="orgae1dcf8">Moving parts</h3>
 <p>
 We have a few things to juggle:
 </p>
@@ -611,8 +612,8 @@ We have a few things to juggle:
 
 </ul>
 </section>
-<section id="slide-org4eacc3c">
-<h3 id="org4eacc3c">Square Count</h3>
+<section id="slide-org3bd8904">
+<h3 id="org3bd8904">Square Count</h3>
 <div class="org-src-container">
 
 <pre  class="src src-haskell"><span style="color: #F92672;">rec</span> <span style="color: #AE81FF;">(</span>dSqCount, eSqCountChg<span style="color: #AE81FF;">)</span> <span style="color: #FD971F;">&lt;-</span> RD.divClass <span style="color: #E6DB74;">"sqr-inc-dec"</span> <span style="color: #FD971F;">$</span> <span style="color: #F92672;">do</span>
@@ -627,8 +628,8 @@ We have a few things to juggle:
 </pre>
 </div>
 </section>
-<section id="slide-org4f860a6">
-<h3 id="org4f860a6">Scale Input</h3>
+<section id="slide-orgb2a59b2">
+<h3 id="orgb2a59b2">Scale Input</h3>
 <div class="org-src-container">
 
 <pre  class="src src-haskell">dScaleInp <span style="color: #FD971F;">&lt;-</span> RD.divClass <span style="color: #E6DB74;">"scale-slider"</span> <span style="color: #FD971F;">$</span> <span style="color: #F92672;">do</span>
@@ -641,8 +642,8 @@ We have a few things to juggle:
 </pre>
 </div>
 </section>
-<section id="slide-org759a778">
-<h3 id="org759a778">Toggle</h3>
+<section id="slide-org115a79c">
+<h3 id="org115a79c">Toggle</h3>
 <div class="org-src-container">
 
 <pre  class="src src-haskell">dFoofen <span style="color: #FD971F;">&lt;-</span> RD.holdDyn dScaleInp <span style="color: #FD971F;">$</span> RD.leftmost
@@ -654,8 +655,8 @@ We have a few things to juggle:
 </section>
 </section>
 <section>
-<section id="slide-org63f66f8">
-<h2 id="org63f66f8">Game of Life - WebGL</h2>
+<section id="slide-org3a6fe01">
+<h2 id="org3a6fe01">Game of Life - WebGL</h2>
 
 <div class="figure">
 <p><img src="genEvoArt/gol.gif" alt="gol.gif" />
@@ -666,8 +667,8 @@ We have a few things to juggle:
 
 </ul>
 </section>
-<section id="slide-orgef12bee">
-<h3 id="orgef12bee">Basic idea</h3>
+<section id="slide-org0c4ec9c">
+<h3 id="org0c4ec9c">Basic idea</h3>
 <p>
 Alright, so brace yourself, but what about&#x2026;
 </p>
@@ -680,16 +681,16 @@ Alright, so brace yourself, but what about&#x2026;
 
 </ul>
 </section>
-<section id="slide-orgbc8d397">
-<h3 id="orgbc8d397">Shift yaks</h3>
+<section id="slide-org9a361b2">
+<h3 id="org9a361b2">Shift yaks</h3>
 <ul>
 <li class="fragment roll-in">Focus is no longer on drawing actions</li>
 <li class="fragment roll-in">Now it is orchestration of actions that draw</li>
 
 </ul>
 </section>
-<section id="slide-org661ed8d">
-<h3 id="org661ed8d">Basic idea redux</h3>
+<section id="slide-orgaf7fd60">
+<h3 id="orgaf7fd60">Basic idea redux</h3>
 <ul>
 <li class="fragment roll-in">Initialise two framebuffers</li>
 <li class="fragment roll-in">Populate one with random values</li>
@@ -705,8 +706,8 @@ Alright, so brace yourself, but what about&#x2026;
 
 </ul>
 </section>
-<section id="slide-orgf92d670">
-<h3 id="orgf92d670">Initialising WebGL</h3>
+<section id="slide-orgf29fb95">
+<h3 id="orgf29fb95">Initialising WebGL</h3>
 <ul>
 <li class="fragment roll-in">Context</li>
 <li class="fragment roll-in">Shaders - needs compiling</li>
@@ -714,8 +715,8 @@ Alright, so brace yourself, but what about&#x2026;
 
 </ul>
 </section>
-<section id="slide-orge93d2e8">
-<h3 id="orge93d2e8">Don't forget</h3>
+<section id="slide-orgf23e000">
+<h3 id="orgf23e000">Don't forget</h3>
 <ul>
 <li class="fragment grow">We're</li>
 <li class="fragment grow">not</li>
@@ -724,8 +725,8 @@ Alright, so brace yourself, but what about&#x2026;
 
 </ul>
 </section>
-<section id="slide-org12e3a72">
-<h3 id="org12e3a72">Monad transformers, woo</h3>
+<section id="slide-orga4832f0">
+<h3 id="orga4832f0">Monad transformers, woo</h3>
 <p>
 We can have <i>nicer</i> things.
 </p>
@@ -754,8 +755,8 @@ We can have <i>nicer</i> things.
 <i>nb:</i> <code>MonadJSM</code> ~ <code>MonadIO</code> when building with GHCJS.
 </p>
 </section>
-<section id="slide-org2b38f4b">
-<h3 id="org2b38f4b">Unremarkable code</h3>
+<section id="slide-orgc2b1a1a">
+<h3 id="orgc2b1a1a">Unremarkable code</h3>
 <div class="org-src-container">
 
 <pre  class="src src-haskell"><span style="color: #A6E22E;">initShader</span>
@@ -778,8 +779,8 @@ We can have <i>nicer</i> things.
 </pre>
 </div>
 </section>
-<section id="slide-orgd3eeb70">
-<h3 id="orgd3eeb70">Code unremarkable</h3>
+<section id="slide-org338fdb2">
+<h3 id="org338fdb2">Code unremarkable</h3>
 <p>
 Check for errors
 </p>
@@ -807,8 +808,8 @@ GLB<span style="color: #A6E22E;">.</span>attachShader cx <span style="color: #AE
 </pre>
 </div>
 </section>
-<section id="slide-org274d55e">
-<h3 id="org274d55e">Abstraction to <code>Event</code></h3>
+<section id="slide-org09ea860">
+<h3 id="org09ea860">Abstraction to <code>Event</code></h3>
 <p>
 Reflex helps out here too:
 </p>
@@ -835,8 +836,8 @@ Reflex helps out here too:
 </pre>
 </div>
 </section>
-<section id="slide-orgb94e807">
-<h3 id="orgb94e807">Fork in the graph</h3>
+<section id="slide-org6a9d870">
+<h3 id="org6a9d870">Fork in the graph</h3>
 <ul>
 <li class="fragment roll-in">An error - Bugger</li>
 <li class="fragment roll-in">An initialised environment - Woot</li>
@@ -846,8 +847,8 @@ Reflex helps out here too:
 
 </ul>
 </section>
-<section id="slide-org3e8483f">
-<h3 id="org3e8483f">Only what we need</h3>
+<section id="slide-org22db004">
+<h3 id="org22db004">Only what we need</h3>
 <p>
 The FP way, narrow your focus/function to a smaller problem.
 </p>
@@ -871,8 +872,8 @@ One to run the orchestration for our WebGL
 
 </ul>
 </section>
-<section id="slide-org54c8041">
-<h3 id="org54c8041">Making the choice</h3>
+<section id="slide-orgce8b0a6">
+<h3 id="orgce8b0a6">Making the choice</h3>
 <div class="org-src-container">
 
 <pre  class="src src-haskell"><span style="color: #F92672;">_</span> <span style="color: #FD971F;">&lt;-</span> RD.widgetHold <span style="color: #AE81FF;">(</span>RD.text <span style="color: #E6DB74;">"Nothing Ready Yet."</span><span style="color: #AE81FF;">)</span> <span style="color: #FD971F;">$</span> R.leftmost
@@ -882,8 +883,8 @@ One to run the orchestration for our WebGL
 </pre>
 </div>
 </section>
-<section id="slide-org0a9a25f">
-<h3 id="org0a9a25f">Manage change</h3>
+<section id="slide-orgaf25159">
+<h3 id="orgaf25159">Manage change</h3>
 <ul>
 <li><p>
 Let Reflex manage our <code>GOL</code> record in a <code>Dynamic</code>
@@ -908,8 +909,8 @@ Updated on a step or reset <code>Event</code>
 
 </ul>
 </section>
-<section id="slide-org3250d0d">
-<h3 id="org3250d0d">Step / Reset</h3>
+<section id="slide-org42309e3">
+<h3 id="org42309e3">Step / Reset</h3>
 <div class="org-src-container">
 
 <pre  class="fragment (roll-in)"><span style="color: #A6E22E;">step</span>            <span style="color: #FD971F;">::</span> <span style="color: #FD971F;">...</span> <span style="color: #FD971F;">=&gt;</span>           <span style="color: #66D9EF;">WebGLRenderingContext</span> <span style="color: #FD971F;">-&gt;</span> <span style="color: #66D9EF;">GOL</span> <span style="color: #FD971F;">-&gt;</span> m <span style="color: #66D9EF;">GOL</span>
@@ -932,8 +933,8 @@ eWasReset     <span style="color: #FD971F;">&lt;-</span> glRun <span style="colo
 </pre>
 </div>
 </section>
-<section id="slide-org2e99d15">
-<h3 id="org2e99d15">Recursive Definition</h3>
+<section id="slide-orge2017c7">
+<h3 id="orge2017c7">Recursive Definition</h3>
 <div class="org-src-container">
 
 <pre  class="src src-haskell"><span style="color: #A6E22E;">golRender</span> golInfo sGen gol' <span style="color: #FD971F;">=</span> <span style="color: #F92672;">mdo</span>
@@ -956,13 +957,13 @@ eWasReset     <span style="color: #FD971F;">&lt;-</span> glRun <span style="colo
 </section>
 </section>
 <section>
-<section id="slide-org25ee7fd">
-<h2 id="org25ee7fd">Wrapping Up</h2>
-<div class="outline-text-2" id="text-org25ee7fd">
+<section id="slide-orgeb64299">
+<h2 id="orgeb64299">Wrapping Up</h2>
+<div class="outline-text-2" id="text-orgeb64299">
 </div>
 </section>
-<section id="slide-org1a383fa">
-<h3 id="org1a383fa">Nice bits</h3>
+<section id="slide-org0edc1fd">
+<h3 id="org0edc1fd">Nice bits</h3>
 <ul>
 <li class="fragment roll-in">FP graphics, in the browser?! IT WORKS!!1eleventy!</li>
 <li class="fragment roll-in">Being able to use Mozilla Developer Network (MDN) docs is awesome</li>
@@ -976,8 +977,8 @@ eWasReset     <span style="color: #FD971F;">&lt;-</span> glRun <span style="colo
 
 </ul>
 </section>
-<section id="slide-org00f5da3">
-<h3 id="org00f5da3">Sticky bits</h3>
+<section id="slide-org18c8f35">
+<h3 id="org18c8f35">Sticky bits</h3>
 <ul>
 <li class="fragment roll-in">Some types don't line up: <code>ArrayBufferView</code> doesn't exist in JS</li>
 <li class="fragment roll-in">Some optional function arguments&#x2026; aren't</li>
@@ -1003,8 +1004,8 @@ Type of <code>fill</code> from <code>ghcjs-dom</code> for 2D Canvas
 </section>
 </section>
 <section>
-<section id="slide-org7737c4b">
-<h2 id="org7737c4b">Have at it!</h2>
+<section id="slide-org1f0a868">
+<h2 id="org1f0a868">Have at it!</h2>
 <p>
 From here, many good things can come.
 </p>
@@ -1024,8 +1025,8 @@ Thank you. :)
 </section>
 </section>
 <section>
-<section id="slide-orgcc001b6">
-<h2 id="orgcc001b6">References</h2>
+<section id="slide-orgc517d56">
+<h2 id="orgc517d56">References</h2>
 <ul>
 <li>Reflex
 <ul>
