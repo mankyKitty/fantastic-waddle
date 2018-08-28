@@ -387,14 +387,14 @@ void ctx.fill(path[, fillRule]);
         #+BEGIN_SRC haskell
 fill :: ... => CanvasRenderingContext2D -> Maybe CanvasWindingRule -> m ()
         #+END_SRC
-* Have at it!        
+* Have at it!
   From here, many good things can come.
   - Games
   - Charts
   - More art
   - All driven by the power of FP
   - Nothing can stop you, try something
-   
+
   Thank you. :)
 
 * References
@@ -403,10 +403,10 @@ fill :: ... => CanvasRenderingContext2D -> Maybe CanvasWindingRule -> m ()
     - https://github.com/reflex-frp/reflex-platform
     - https://github.com/obsidiansystems/obelisk
     - https://blog.qfpl.io/posts/reflex/basics/introduction/
-  - MDN docs 
+  - MDN docs
     - https://developer.mozilla.org/en-US/docs/Web/API
   - WebGL
     - Game of Life in a Fragment Shader
       https://nullprogram.com/blog/2014/06/10/
-      
+
   ...and so many more, please come and ask!
