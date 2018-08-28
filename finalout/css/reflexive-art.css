@@ -1,1 +1,24 @@
-/nix/store/nnqvs75fhsl33ny0942y4v98snlccwsk-FantasticWaddleCSS/css/reflexive-art.css
+.svg-wrapper, .canvas-wrapper > canvas {
+  background-color: #fffff0;
+  z-index: 1;
+}
+
+canvas.gol-canvas {
+  background: black;
+}
+
+.svg-scaler {
+  width: 100%;
+}
+
+.svg-wrapper {
+  transform-origin: top left;
+  transform: scale(10);
+}
+
+.basic-poly {
+  stroke-width: 0.2px;
+}
+
+.joy-slider {
+}
