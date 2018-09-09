@@ -161,7 +161,7 @@ createGOLCube cx = liftJSM . runExceptT . runWebGLM $
       <*> pure (CubeRot 0.0)
 
     primAspect = GOL.width / GOL.height
-    texAspect = fromIntegral GOL.scaledWidth / fromIntegral GOL.scaledHeight
+    texAspect = fromIntegral (GOL.scaledWidth :: Integer) / fromIntegral (GOL.scaledHeight :: Integer)
 
 initCube
   :: MonadWidget t m

@@ -90,7 +90,7 @@ golCubeDraw
   -> WebGLRenderingContext
   -> GOLCube
   -> m GOLCube
-golCubeDraw mvVec cx g = do
+golCubeDraw mvVec cx g =
   drawScene
     GOL.width
     GOL.height
