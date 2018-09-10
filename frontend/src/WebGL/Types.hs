@@ -61,6 +61,7 @@ data GOLCube = GOLCube
   , _golCubeProjMatPrimary :: Float32Array
   , _golCubeCubeRotation   :: CubeRotation
   }
+makeClassy ''GOLCube
 
 data CubeInfo t = CubeInfo
   { _cubeInfoCx         :: Dynamic t WebGLRenderingContext

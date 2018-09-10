@@ -6,13 +6,13 @@ module Canvas2D.JoyDivision where
 import           Prelude                            (Double, Float, Int, Num,
                                                      abs, div, floor,
                                                      fromIntegral, max,
-                                                     realToFrac, show, snd, (*),
+                                                     realToFrac, snd, (*),
                                                      (+), (-), (/))
 
 import           Control.Applicative                (liftA3, pure, (<*>))
 import           Control.Category                   ((.))
-import           Control.Lens                       (at, itraverse_, ix, mapped,
-                                                     (%~), (+~), (?~), (^.),
+import           Control.Lens                       (at, itraverse_, ix,
+                                                     (+~), (?~), (^.),
                                                      (^?))
 import           Control.Monad                      ((>>=))
 
@@ -27,7 +27,6 @@ import           Data.Maybe                         (fromMaybe)
 import           Data.Semigroup                     ((<>))
 
 import           Data.Text                          (Text)
-import qualified Data.Text                          as Text
 
 import           Data.Map                           (Map)
 
@@ -42,8 +41,7 @@ import qualified System.Random                      as Rnd
 
 import qualified Reflex                             as R
 
-import           Reflex.Dom.Core                    (MonadWidget, RangeInput,
-                                                     Widget, (=:))
+import           Reflex.Dom.Core                    (Widget, (=:))
 import qualified Reflex.Dom.Core                    as RD
 
 import qualified Reflex.Dom.CanvasDyn               as C
@@ -196,7 +194,7 @@ joyDivision sGen = do
     -- Variance bound range adjustment
     (RD.divClass "slider" $ B.bsRangeInput "Variance" "variance" 50 $ \m -> m
       & at "min" ?~ "0"
-      & at "max" ?~ tshow (paintingSize / 2.0)
+      & at "max" ?~ tshow ((paintingSize / 2) :: Double)
       & at "step" ?~ "1"
     )
 

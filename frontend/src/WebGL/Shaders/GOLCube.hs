@@ -4,7 +4,6 @@ module WebGL.Shaders.GOLCube
   , golCubeVertSrc
   ) where
 
-import           Control.Lens   (( # ))
 import           Data.Text      (Text)
 import qualified Data.Text      as Text
 

@@ -51,6 +51,7 @@ body sGen = do
     blank
   blank
 
+cssLink :: DomBuilder t m => Text -> m ()
 cssLink ss = elAttr "link" ("rel" =: "stylesheet" <> "href" =: ss) blank
 
 headStatic :: StaticWidget x ()
