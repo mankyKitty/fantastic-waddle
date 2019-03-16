@@ -12,8 +12,13 @@ To compile to JS and use the provided `index.html` (**Recommended**).
 
 ```bash
 $ git clone https://github.com/mankyKitty/fantastic-waddle
-$ cd fudge
-$ nix build -f release.nix
+$ cd fantastic-waddle
+$ nix build -f release.nix minifiedFrontend
+```
+
+To open the page in a browser:
+
+```bash
 $ <browser> $(pwd)/index.html &
 ```
 
